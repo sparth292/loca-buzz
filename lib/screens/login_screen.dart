@@ -21,6 +21,28 @@ class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
 
+  Future<void> _resendVerificationEmail(String email) async {
+    try {
+      await supabase.auth.resend(
+        type: OtpType.signup,
+        email: email,
+        emailRedirectTo: 'io.supabase.locabuzz://login-callback',
+      );
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Verification email resent!')),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Failed to resend verification email')),
+        );
+      }
+    }
+  }
+
   Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
     
@@ -39,6 +61,40 @@ class _LoginPageState extends State<LoginPage> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Login failed. Please try again.')),
         );
+        return;
+      }
+
+      // Check if email is verified
+      if (response.user?.emailConfirmedAt == null) {
+        if (!mounted) return;
+        await supabase.auth.signOut();
+        
+        // Show email not verified message
+        if (mounted) {
+          showDialog(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('Email Not Verified'),
+              content: const Text(
+                'Please verify your email before logging in. ' 
+                'Check your email for a verification link.'
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('OK'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _resendVerificationEmail(_emailController.text.trim());
+                  },
+                  child: const Text('Resend Verification Email'),
+                ),
+              ],
+            ),
+          );
+        }
         return;
       }
 

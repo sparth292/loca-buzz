@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../main.dart' show BeeColors, BrandTitle, supabase;
-import 'home_page.dart';
+import 'email_confirmation_screen.dart';
 import 'login_screen.dart';
 
 class SignupPage extends StatefulWidget {
@@ -58,10 +57,20 @@ class _SignupPageState extends State<SignupPage> {
     setState(() => _isLoading = true);
 
     try {
-      // 1. Sign up the user
+      // 1. Sign up the user with email confirmation
+      final email = _emailController.text.trim();
+      final password = _passwordController.text.trim();
+      
       final authResponse = await supabase.auth.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text.trim(),
+        email: email,
+        password: password,
+        emailRedirectTo: 'io.supabase.locabuzz://login-callback', // Update with your deep link
+        data: {
+          'full_name': _fullNameController.text.trim(),
+          'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
+          'phone': _phoneController.text.trim(),
+          'is_service_provider': widget.isServiceProvider,
+        },
       );
 
       if (authResponse.user == null) {
@@ -71,7 +80,7 @@ class _SignupPageState extends State<SignupPage> {
       // 2. Create user profile in the database
       await supabase.from('profiles').insert({
         'id': authResponse.user!.id,
-        'email': _emailController.text.trim(),
+        'email': email,
         'full_name': _fullNameController.text.trim(),
         'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
         'phone': _phoneController.text.trim(),
@@ -79,21 +88,19 @@ class _SignupPageState extends State<SignupPage> {
         'created_at': DateTime.now().toIso8601String(),
       });
 
-      // 3. Save role to shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isServiceProvider', widget.isServiceProvider);
-
       if (!mounted) return;
       
-      // 4. Show success message and navigate to login
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Account created successfully! Please log in.'),
-          backgroundColor: Colors.green,
+      // 3. Navigate to email confirmation screen
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => EmailConfirmationScreen(
+            email: email,
+            password: password,
+            isServiceProvider: widget.isServiceProvider,
+          ),
         ),
       );
-      
-      Navigator.pushReplacementNamed(context, LoginPage.route);
       
     } on AuthException catch (error) {
       if (!mounted) return;
@@ -103,7 +110,7 @@ class _SignupPageState extends State<SignupPage> {
     } catch (error) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.toString())),
+        const SnackBar(content: Text('An error occurred during signup')),
       );
     } finally {
       if (mounted) {

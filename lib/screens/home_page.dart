@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
 import 'messages_screen.dart';
 import 'explore_screen.dart';
@@ -18,7 +19,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController _searchController = TextEditingController();
   int _selectedCategoryIndex = 0;
   int _selectedBottomNavIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
@@ -40,6 +40,29 @@ class _HomePageState extends State<HomePage> {
     {'icon': Icons.more_horiz, 'label': 'More'},
   ];
 
+  final List<Map<String, dynamic>> _carouselItems = [
+    {
+      'title': 'Special Offers',
+      'subtitle': 'Up to 50% off on all services',
+      'icon': Icons.local_offer_outlined,
+      'backgroundColor': const Color(0xFF6E5DE7),
+    },
+    {
+      'title': 'New Services',
+      'subtitle': 'Discover our latest service providers',
+      'icon': Icons.explore,
+      'backgroundColor': const Color(0xFF4CAF50),
+    },
+    {
+      'title': 'Top Rated',
+      'subtitle': 'Check out our highest rated professionals',
+      'icon': Icons.star_border,
+      'backgroundColor': const Color(0xFFFF9800),
+    },
+  ];
+  
+  final PageController _carouselController = PageController(viewportFraction: 0.95);
+
   final List<Map<String, dynamic>> _featuredBusinesses = [
     {
       'name': 'Sparky Electrics',
@@ -55,7 +78,6 @@ class _HomePageState extends State<HomePage> {
       'distance': 0.8,
       'image': 'assets/images/grocery.jpg',
     },
-    // Add more featured businesses as needed
   ];
 
   @override
@@ -110,37 +132,99 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Search Bar
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(12),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Row(
+                // Carousel with PageView
+                SizedBox(
+                  height: 160,
+                  child: Column(
                     children: [
-                      const Icon(Icons.search, color: BeeColors.beeGrey),
-                      const SizedBox(width: 12),
                       Expanded(
-                        child: TextField(
-                          controller: _searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'Search for services or products...',
-                            border: InputBorder.none,
-                            hintStyle: TextStyle(color: BeeColors.beeGrey),
-                          ),
+                        child: PageView.builder(
+                          controller: _carouselController,
+                          itemCount: _carouselItems.length,
+                          onPageChanged: (index) {},
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(16),
+                                  color: _carouselItems[index]['backgroundColor'],
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withOpacity(0.1),
+                                      blurRadius: 10,
+                                      offset: const Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: Stack(
+                                  children: [
+                                    Positioned(
+                                      right: 16,
+                                      top: 16,
+                                      bottom: 16,
+                                      width: 100,
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(12),
+                                        child: Container(
+                                          color: Colors.white.withOpacity(0.2),
+                                          child: Icon(
+                                            _carouselItems[index]['icon'],
+                                            size: 50,
+                                            color: Colors.white,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.all(20.0),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Text(
+                                            _carouselItems[index]['title'],
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white,
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            _carouselItems[index]['subtitle'],
+                                            style: GoogleFonts.poppins(
+                                              color: Colors.white.withOpacity(0.9),
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
-                      IconButton(
-                        icon: const Icon(Icons.tune, color: BeeColors.beeGrey),
-                        onPressed: () {},
+                      const SizedBox(height: 8),
+                      SmoothPageIndicator(
+                        controller: _carouselController,
+                        count: _carouselItems.length,
+                        effect: const WormEffect(
+                          dotHeight: 8,
+                          dotWidth: 8,
+                          activeDotColor: BeeColors.beeYellow,
+                          dotColor: Colors.grey,
+                        ),
+                        onDotClicked: (index) {
+                          _carouselController.animateToPage(
+                            index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.easeInOut,
+                          );
+                        },
                       ),
                     ],
                   ),

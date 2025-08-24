@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:locabuzz/screens/role_selection_screen.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import '../../theme/app_colors.dart';
-import '../user_type_selection_screen.dart';
+import '../../main.dart'; // Import main.dart to access BeeColors
 
 class OnboardingScreen extends StatefulWidget {
   static const String route = '/onboarding';
@@ -19,24 +19,24 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   int _currentPage = 0;
   final int _numPages = 3;
 
-  final List<Map<String, String>> _onboardingData = [
+  final List<Map<String, dynamic>> _onboardingData = [
     {
       'title': 'Discover Local\nServices Easily!',
       'description':
       'Find the best businesses and services\nnear you with just a few taps.',
-      'image': 'assets/images/onboarding1.svg',
+      'image': 'assets/images/search.svg',
     },
     {
       'title': 'Book Appointments\nInstantly',
       'description':
       'Book services on the go with our easy-\nto-use booking system.',
-      'image': 'assets/images/onboarding3.svg',
+      'image': 'assets/images/appointment.svg',
     },
     {
       'title': 'Manage Your Business\nProfile Smoothly.',
       'description':
       'If you’re a service provider, manage your\nbookings, customers, and reviews seamlessly.',
-      'image': 'assets/images/onboarding2.svg',
+      'image': 'assets/images/business.svg',
     },
   ];
 
@@ -48,7 +48,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   void _navigateToNext() {
     if (_currentPage == _numPages - 1) {
-      Navigator.pushReplacementNamed(context, UserTypeSelectionScreen.route);
+      Navigator.pushReplacementNamed(context, '/role-selection');
     } else {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
@@ -79,7 +79,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         // Illustration
                         Expanded(
                           child: SvgPicture.asset(
-                            _onboardingData[index]['image']!,
+                            _onboardingData[index]['image'],
+                            height: 250,
                             fit: BoxFit.contain,
                           ),
                         ),
@@ -92,7 +93,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           style: GoogleFonts.poppins(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
-                            color: Colors.black87,
+                            color: BeeColors.beeBlack,
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -103,10 +104,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           textAlign: TextAlign.center,
                           style: GoogleFonts.poppins(
                             fontSize: 14,
-                            color: Colors.black54,
+                            color: BeeColors.beeBlack.withOpacity(0.7),
                           ),
                         ),
+                      const SizedBox(height: 24),
                       ],
+                      
                     ),
                   );
                 },
@@ -125,8 +128,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       dotHeight: 8,
                       dotWidth: 8,
                       spacing: 8,
-                      activeDotColor: Color(0xFF4CAF50), // green
-                      dotColor: Colors.grey,
+                      activeDotColor: BeeColors.beeYellow,
+                      dotColor: BeeColors.beeGrey,
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -137,7 +140,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     child: ElevatedButton(
                       onPressed: _navigateToNext,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF4CAF50), // green
+                        backgroundColor: BeeColors.beeYellow,
+                        foregroundColor: BeeColors.beeBlack,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),

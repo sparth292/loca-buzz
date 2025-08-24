@@ -2,12 +2,24 @@ import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/sign_up_screen.dart';
 import 'screens/role_selection_screen.dart';
+import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/location_setup_screen.dart';
 import 'screens/home_page.dart';
 import 'screens/profile_page.dart';
 import 'business_service_provider_dashboard/service_provider_dashboard.dart';
-void main() {
-  runApp(const LocaBuzzApp());
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+final supabase = Supabase.instance.client;
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: 'https://qzreommjwrqrwtaexdxc.supabase.co',
+    anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6cmVvbW1qd3Jxcnd0YWV4ZHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4MTM0NTgsImV4cCI6MjA2NzM4OTQ1OH0.7GZTP4ZRbs-ypOl-z4hjH7w7ZQgAjOMkjzXzJ1GBLTM',
+  );
+  runApp(const MaterialApp(
+    home: LocaBuzzApp(),
+  ));
 }
 
 class BeeColors {
@@ -76,8 +88,9 @@ class LocaBuzzApp extends StatelessWidget {
           ),
         ),
       ),
-      initialRoute: '/role-selection',
+      initialRoute: '/onboarding',
       routes: {
+        '/onboarding': (context) => const OnboardingScreen(),
         '/role-selection': (context) => const RoleSelectionScreen(),
         LoginPage.route: (context) => const LoginPage(),
         SignupPage.route: (context) => const SignupPage(),

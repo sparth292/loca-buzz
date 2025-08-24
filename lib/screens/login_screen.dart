@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'home_page.dart';
 import 'sign_up_screen.dart';
 import '../business_service_provider_dashboard/service_provider_dashboard.dart';
-import '../main.dart' show BeeColors, BrandTitle;
+import '../main.dart' show BeeColors, BrandTitle, supabase;
 
 class LoginPage extends StatefulWidget {
   static const String route = '/login';
@@ -15,21 +16,68 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   bool _obscure = true;
+  bool _isLoading = false;
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   Future<void> _handleLogin() async {
-    // TODO: Implement actual login logic
-    // For now, we'll just check the role and navigate
-    final prefs = await SharedPreferences.getInstance();
-    final isServiceProvider = prefs.getBool('isServiceProvider') ?? false;
+    if (!_formKey.currentState!.validate()) return;
     
-    if (!mounted) return;
-    
-    if (isServiceProvider) {
-      // Navigate to service provider dashboard
-      Navigator.pushReplacementNamed(context, ServiceProviderDashboard.route);
-    } else {
-      // Navigate to regular home page
-      Navigator.pushReplacementNamed(context, HomePage.route);
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final response = await supabase.auth.signInWithPassword(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (response.user == null) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login failed. Please try again.')),
+        );
+        return;
+      }
+
+      // Get user role from profiles table
+      final userData = await supabase
+          .from('profiles')
+          .select('is_service_provider')
+          .eq('id', response.user!.id)
+          .single();
+
+      final isServiceProvider = userData['is_service_provider'] ?? false;
+      
+      // Save role to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isServiceProvider', isServiceProvider);
+
+      if (!mounted) return;
+      
+      if (isServiceProvider) {
+        Navigator.pushReplacementNamed(context, ServiceProviderDashboard.route);
+      } else {
+        Navigator.pushReplacementNamed(context, HomePage.route);
+      }
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('An unexpected error occurred')),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -58,23 +106,51 @@ class _LoginPageState extends State<LoginPage> {
                 style: TextStyle(color: BeeColors.beeBlack, fontSize: 16),
               ),
               const SizedBox(height: 32),
-              TextField(
-                keyboardType: TextInputType.emailAddress,
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.mail_outline),
-                  hintText: 'Email or phone',
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextField(
-                obscureText: _obscure,
-                decoration: InputDecoration(
-                  prefixIcon: const Icon(Icons.lock_outline),
-                  hintText: 'Password',
-                  suffixIcon: IconButton(
-                    icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
-                    onPressed: () => setState(() => _obscure = !_obscure),
-                  ),
+              Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      decoration: const InputDecoration(
+                        prefixIcon: Icon(Icons.mail_outline),
+                        labelText: 'Email',
+                        hintText: 'Enter your email',
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                            .hasMatch(value)) {
+                          return 'Please enter a valid email';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    TextFormField(
+                      controller: _passwordController,
+                      obscureText: _obscure,
+                      decoration: InputDecoration(
+                        prefixIcon: const Icon(Icons.lock_outline),
+                        labelText: 'Password',
+                        hintText: 'Enter your password',
+                        suffixIcon: IconButton(
+                          icon: Icon(_obscure ? Icons.visibility_off : Icons.visibility),
+                          onPressed: () => setState(() => _obscure = !_obscure),
+                        ),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your password';
+                        } else if (value.length < 6) {
+                          return 'Password must be at least 6 characters';
+                        }
+                        return null;
+                      },
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 8),
@@ -86,22 +162,23 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
               const SizedBox(height: 4),
-              ElevatedButton(
-                onPressed: () async {
-                  final prefs = await SharedPreferences.getInstance();
-                  final isServiceProvider = prefs.getBool('isServiceProvider') ?? false;
-                  
-                  if (isServiceProvider) {
-                    // Navigate to service provider dashboard
-                    if (!mounted) return;
-                    Navigator.pushReplacementNamed(context, ServiceProviderDashboard.route);
-                  } else {
-                    // Navigate to regular home page
-                    if (!mounted) return;
-                    Navigator.pushReplacementNamed(context, HomePage.route);
-                  }
-                },
-                child: const Text('Sign in'),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _handleLogin,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : const Text('Log In'),
+                ),
               ),
               const SizedBox(height: 20),
               Row(

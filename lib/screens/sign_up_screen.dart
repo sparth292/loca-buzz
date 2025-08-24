@@ -1,10 +1,10 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:locabuzz/screens/home_page.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../main.dart';
+import '../main.dart' show BeeColors, BrandTitle, supabase;
+import 'home_page.dart';
 import 'login_screen.dart';
 
 class SignupPage extends StatefulWidget {
@@ -23,19 +23,92 @@ class SignupPage extends StatefulWidget {
 class _SignupPageState extends State<SignupPage> {
   int currentStep = 0;
   bool acceptedTerms = false;
+  bool _isLoading = false;
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+  
+  final _formKey = GlobalKey<FormState>();
+  final _fullNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _phoneController = TextEditingController();
+  final _usernameController = TextEditingController();
+
+  @override
+  void dispose() {
+    _fullNameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _phoneController.dispose();
+    _usernameController.dispose();
+    super.dispose();
+  }
 
   Future<void> _handleSignUp() async {
-    // TODO: Implement signup logic with your backend
-    // After successful signup, save the role and navigate accordingly
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isServiceProvider', widget.isServiceProvider);
-    
-    // Navigate to home or service provider dashboard based on role
-    if (widget.isServiceProvider) {
-      // TODO: Navigate to service provider dashboard
+    if (!_formKey.currentState!.validate()) return;
+    if (!acceptedTerms) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please accept the terms and conditions')),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      // 1. Sign up the user
+      final authResponse = await supabase.auth.signUp(
+        email: _emailController.text.trim(),
+        password: _passwordController.text.trim(),
+      );
+
+      if (authResponse.user == null) {
+        throw Exception('Failed to create user account');
+      }
+
+      // 2. Create user profile in the database
+      await supabase.from('profiles').insert({
+        'id': authResponse.user!.id,
+        'email': _emailController.text.trim(),
+        'full_name': _fullNameController.text.trim(),
+        'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
+        'phone': _phoneController.text.trim(),
+        'is_service_provider': widget.isServiceProvider,
+        'created_at': DateTime.now().toIso8601String(),
+      });
+
+      // 3. Save role to shared preferences
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('isServiceProvider', widget.isServiceProvider);
+
+      if (!mounted) return;
+      
+      // 4. Show success message and navigate to login
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully! Please log in.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      
       Navigator.pushReplacementNamed(context, LoginPage.route);
-    } else {
-      Navigator.pushReplacementNamed(context, LoginPage.route);
+      
+    } on AuthException catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.message)),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error.toString())),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     }
   }
 
@@ -93,90 +166,129 @@ class _SignupPageState extends State<SignupPage> {
                   style: TextStyle(color: BeeColors.beeBlack, fontSize: 16),
                 ),
                 const SizedBox(height: 12),
-                Stepper(
-                  type: StepperType.vertical,
-                  currentStep: currentStep,
-                  onStepContinue: () {
-                    if (currentStep < 2) {
-                      setState(() => currentStep += 1);
-                    } else {
-                      _handleSignUp();
-                    }
-                  },
-                  onStepCancel: () {
-                    if (currentStep > 0) setState(() => currentStep -= 1);
-                  },
-                  controlsBuilder: (context, details) {
-                    final bool isLast = currentStep == 2;
-                    return Padding(
-                      padding: const EdgeInsets.only(top: 16),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: ElevatedButton(
-                              onPressed: details.onStepContinue,
-                              child: Text(isLast ? 'Create account' : 'Continue'),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          if (currentStep > 0)
-                            TextButton(onPressed: details.onStepCancel, child: const Text('Back')),
-                        ],
+                Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      // Full Name
+                      TextFormField(
+                        controller: _fullNameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Full Name',
+                          prefixIcon: Icon(Icons.person_outline),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your full name';
+                          }
+                          return null;
+                        },
                       ),
-                    );
-                  },
-                  steps: [
-                    Step(
-                      title: const Text('Account'),
-                      isActive: currentStep >= 0,
-                      state: currentStep > 0 ? StepState.complete : StepState.indexed,
-                      content: Column(
-                        children: const [
-                          TextField(
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.person_outline),
-                              hintText: 'Full name',
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          TextField(
-                            keyboardType: TextInputType.emailAddress,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.mail_outline),
-                              hintText: 'Email address',
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 16),
+                      
+                      // Email
+                      TextFormField(
+                        controller: _emailController,
+                        keyboardType: TextInputType.emailAddress,
+                        decoration: const InputDecoration(
+                          labelText: 'Email Address',
+                          prefixIcon: Icon(Icons.mail_outline),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your email';
+                          } else if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
+                              .hasMatch(value)) {
+                            return 'Please enter a valid email';
+                          }
+                          return null;
+                        },
                       ),
-                    ),
-                    Step(
-                      title: const Text('Profile'),
-                      isActive: currentStep >= 1,
-                      state: currentStep > 1 ? StepState.complete : StepState.indexed,
-                      content: Column(
-                        children: const [
-                          TextField(
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.badge_outlined),
-                              hintText: 'Username (optional)',
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          TextField(
-                            keyboardType: TextInputType.phone,
-                            decoration: InputDecoration(
-                              prefixIcon: Icon(Icons.phone_outlined),
-                              hintText: 'Phone number',
-                            ),
-                          ),
-                        ],
+                      const SizedBox(height: 16),
+                      
+                      // Username (optional)
+                      TextFormField(
+                        controller: _usernameController,
+                        decoration: const InputDecoration(
+                          labelText: 'Username (optional)',
+                          prefixIcon: Icon(Icons.badge_outlined),
+                        ),
                       ),
-                    ),
-                    Step(
-                      title: const Text('Terms'),
-                      isActive: currentStep >= 2,
-                      state: currentStep >= 2 && acceptedTerms ? StepState.complete : StepState.indexed,
-                      content: Row(
+                      const SizedBox(height: 16),
+                      
+                      // Phone
+                      TextFormField(
+                        controller: _phoneController,
+                        keyboardType: TextInputType.phone,
+                        decoration: const InputDecoration(
+                          labelText: 'Phone Number',
+                          prefixIcon: Icon(Icons.phone_outlined),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your phone number';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Password
+                      TextFormField(
+                        controller: _passwordController,
+                        obscureText: _obscurePassword,
+                        decoration: InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () => setState(
+                                () => _obscurePassword = !_obscurePassword),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value == null || value.isEmpty) {
+                            return 'Please enter a password';
+                          } else if (value.length < 6) {
+                            return 'Password must be at least 6 characters';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // Confirm Password
+                      TextFormField(
+                        controller: _confirmPasswordController,
+                        obscureText: _obscureConfirmPassword,
+                        decoration: InputDecoration(
+                          labelText: 'Confirm Password',
+                          prefixIcon: const Icon(Icons.lock_outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscureConfirmPassword
+                                  ? Icons.visibility_off
+                                  : Icons.visibility,
+                            ),
+                            onPressed: () => setState(
+                                () => _obscureConfirmPassword = !_obscureConfirmPassword),
+                          ),
+                        ),
+                        validator: (value) {
+                          if (value != _passwordController.text) {
+                            return 'Passwords do not match';
+                          }
+                          return null;
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Terms and Conditions
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Checkbox(
@@ -184,16 +296,36 @@ class _SignupPageState extends State<SignupPage> {
                             value: acceptedTerms,
                             onChanged: (v) => setState(() => acceptedTerms = v ?? false),
                           ),
-                          const Expanded(
+                          Expanded(
                             child: Text(
                               'I agree to the Terms & Privacy Policy',
-                              style: TextStyle(height: 1.4),
+                              style: GoogleFonts.poppins(fontSize: 14, height: 1.4),
                             ),
                           ),
                         ],
                       ),
-                    ),
-                  ],
+                      const SizedBox(height: 24),
+                      
+                      // Sign Up Button
+                      SizedBox(
+                        width: double.infinity,
+                        height: 50,
+                        child: ElevatedButton(
+                          onPressed: _isLoading ? null : _handleSignUp,
+                          child: _isLoading
+                              ? const SizedBox(
+                                  width: 20,
+                                  height: 20,
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              : Text('Create Account'),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Row(

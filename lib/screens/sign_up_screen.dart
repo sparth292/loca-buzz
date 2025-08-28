@@ -159,7 +159,7 @@ class _SignupPageState extends State<SignupPage> {
                 Row(
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pushReplacementNamed(context, LoginPage.route),
+                      onPressed: () => Navigator.pushReplacementNamed(context, EmailConfirmationScreen.route),
                       icon: const Icon(Icons.arrow_back),
                     ),
                   ],

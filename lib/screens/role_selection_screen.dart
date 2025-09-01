@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
 import '../main.dart' show BeeColors;
-
+// complete the role selection screen
 class RoleSelectionScreen extends StatefulWidget {
   const RoleSelectionScreen({super.key});
 

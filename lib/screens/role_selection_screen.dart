@@ -177,7 +177,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
             
             // Consumer Card
             _RoleCard(
-              title: 'Deaf or Hard of Hearing',
+              title: 'Consumer',
               description: 'Find and book sign language interpreters',
               icon: Icons.accessibility_new_rounded,
               isSelected: _selectedRole == false,
@@ -202,7 +202,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
             
             // Service Provider Card
             _RoleCard(
-              title: 'Sign Language Interpreter',
+              title: 'Service Provider',
               description: 'Offer your interpretation services',
               icon: Icons.translate_rounded,
               isSelected: _selectedRole == true,

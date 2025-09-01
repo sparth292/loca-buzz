@@ -39,22 +39,14 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
     setState(() => _isLoading = true);
     
     try {
-      // Get current session
-      final session = supabase.auth.currentSession;
-      
-      if (session != null) {
-        // Get user data
-        final user = session.user;
-        
-        // Check if email is verified
-        if (user.emailConfirmedAt != null) {
-          _handleSuccessfulVerification();
-          return;
-        }
-      }
-      
-      // If not verified, start listening for auth state changes
+      // Start listening for auth state changes
       _startAuthStateListener();
+      
+      // Check if email is already verified
+      final session = supabase.auth.currentSession;
+      if (session != null && session.user.emailConfirmedAt != null) {
+        setState(() => _isEmailVerified = true);
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -70,9 +62,11 @@ class _EmailConfirmationScreenState extends State<EmailConfirmationScreen> {
 
   void _startAuthStateListener() {
     _authStateChanges.listen((data) async {
-      final session = data.session;
-      if (session != null && session.user.emailConfirmedAt != null) {
-        _handleSuccessfulVerification();
+      if (mounted && !_isEmailVerified) {
+        final session = data.session;
+        if (session != null && session.user.emailConfirmedAt != null) {
+          _handleSuccessfulVerification();
+        }
       }
     });
   }

@@ -45,79 +45,79 @@
       super.dispose();
     }
 
-    Future<void> _handleSignUp() async {
-      if (!_formKey.currentState!.validate()) return;
-      if (!acceptedTerms) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please accept the terms and conditions')),
-        );
-        return;
-      }
+    // Future<void> _handleSignUp() async {
+    //   if (!_formKey.currentState!.validate()) return;
+    //   if (!acceptedTerms) {
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('Please accept the terms and conditions')),
+    //     );
+    //     return;
+    //   }
 
-      setState(() => _isLoading = true);
+    //   setState(() => _isLoading = true);
 
-      try {
-        // 1. Sign up the user with email confirmation
-        final email = _emailController.text.trim();
-        final password = _passwordController.text.trim();
+    //   try {
+    //     // 1. Sign up the user with email confirmation
+    //     final email = _emailController.text.trim();
+    //     final password = _passwordController.text.trim();
         
-        final authResponse = await supabase.auth.signUp(
-          email: email,
-          password: password,
-          emailRedirectTo: 'io.supabase.locabuzz://login-callback', // Update with your deep link
-          data: {
-            'full_name': _fullNameController.text.trim(),
-            'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
-            'phone': _phoneController.text.trim(),
-            'is_service_provider': widget.isServiceProvider,
-          },
-        );
+    //     final authResponse = await supabase.auth.signUp(
+    //       email: email,
+    //       password: password,
+    //       emailRedirectTo: 'io.supabase.locabuzz://login-callback', // Update with your deep link
+    //       data: {
+    //         'full_name': _fullNameController.text.trim(),
+    //         'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
+    //         'phone': _phoneController.text.trim(),
+    //         'is_service_provider': widget.isServiceProvider,
+    //       },
+    //     );
 
-        if (authResponse.user == null) {
-          throw Exception('Failed to create user account');
-        }
+    //     if (authResponse.user == null) {
+    //       throw Exception('Failed to create user account');
+    //     }
 
-        // 2. Create user profile in the database
-        await supabase.from('profiles').insert({
-          'id': authResponse.user!.id,
-          'email': email,
-          'full_name': _fullNameController.text.trim(),
-          'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
-          'phone': _phoneController.text.trim(),
-          'is_service_provider': widget.isServiceProvider,
-          'created_at': DateTime.now().toIso8601String(),
-        });
+    //     // 2. Create user profile in the database
+    //     await supabase.from('profiles').insert({
+    //       'id': authResponse.user!.id,
+    //       'email': email,
+    //       'full_name': _fullNameController.text.trim(),
+    //       'username': _usernameController.text.trim().isEmpty ? null : _usernameController.text.trim(),
+    //       'phone': _phoneController.text.trim(),
+    //       'is_service_provider': widget.isServiceProvider,
+    //       'created_at': DateTime.now().toIso8601String(),
+    //     });
 
-        if (!mounted) return;
+    //     if (!mounted) return;
         
-        // 3. Navigate to email confirmation screen
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => EmailConfirmationScreen(
-              email: email,
-              password: password,
-              isServiceProvider: widget.isServiceProvider,
-            ),
-          ),
-        );
+    //     // 3. Navigate to email confirmation screen
+    //     Navigator.pushReplacement(
+    //       context,
+    //       MaterialPageRoute(
+    //         builder: (context) => EmailConfirmationScreen(
+    //           email: email,
+    //           password: password,
+    //           isServiceProvider: widget.isServiceProvider,
+    //         ),
+    //       ),
+    //     );
         
-      } on AuthException catch (error) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error.message)),
-        );
-      } catch (error) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('An error occurred during signup')),
-        );
-      } finally {
-        if (mounted) {
-          setState(() => _isLoading = false);
-        }
-      }
-    }
+    //   } on AuthException catch (error) {
+    //     if (!mounted) return;
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       SnackBar(content: Text(error.message)),
+    //     );
+    //   } catch (error) {
+    //     if (!mounted) return;
+    //     ScaffoldMessenger.of(context).showSnackBar(
+    //       const SnackBar(content: Text('An error occurred during signup')),
+    //     );
+    //   } finally {
+    //     if (mounted) {
+    //       setState(() => _isLoading = false);
+    //     }
+    //   }
+    // }
 
     @override
     Widget build(BuildContext context) {
@@ -318,7 +318,19 @@
                           width: double.infinity,
                           height: 50,
                           child: ElevatedButton(
-                            onPressed: _isLoading ? null : _handleSignUp,
+                            onPressed: _isLoading ? null : () {
+                              // Navigate to email confirmation screen with required parameters
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => EmailConfirmationScreen(
+                                    email: _emailController.text.trim(),
+                                    password: _passwordController.text.trim(),
+                                    isServiceProvider: widget.isServiceProvider,
+                                  ),
+                                ),
+                              );
+                            },
                             child: _isLoading
                                 ? const SizedBox(
                                     width: 20,

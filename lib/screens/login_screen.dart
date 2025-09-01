@@ -99,24 +99,36 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // Get user role from profiles table
-      final userData = await supabase
-          .from('profiles')
-          .select('is_service_provider')
-          .eq('id', response.user!.id)
-          .single();
+      try {
+        final userData = await supabase
+            .from('profiles')
+            .select('is_service_provider')
+            .eq('id', response.user!.id)
+            .single();
 
-      final isServiceProvider = userData['is_service_provider'] ?? false;
-      
-      // Save role to shared preferences
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('isServiceProvider', isServiceProvider);
+        final isServiceProvider = userData['is_service_provider'] as bool? ?? false;
+        
+        // Save role to shared preferences
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isServiceProvider', isServiceProvider);
 
-      if (!mounted) return;
-      
-      if (isServiceProvider) {
-        Navigator.pushReplacementNamed(context, ServiceProviderDashboard.route);
-      } else {
-        Navigator.pushReplacementNamed(context, HomePage.route);
+        if (!mounted) return;
+        
+        // Clear any existing routes and navigate to the appropriate screen
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          isServiceProvider ? ServiceProviderDashboard.route : HomePage.route,
+          (route) => false,
+        );
+      } catch (e) {
+        if (!mounted) return;
+        // If there's an error fetching user role, default to consumer
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isServiceProvider', false);
+        
+        Navigator.of(context).pushNamedAndRemoveUntil(
+          HomePage.route,
+          (route) => false,
+        );
       }
     } on AuthException catch (error) {
       if (!mounted) return;

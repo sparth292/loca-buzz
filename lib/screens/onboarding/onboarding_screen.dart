@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:locabuzz/screens/role_selection_screen.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
+import 'package:google_fonts/google_fonts.dart';import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../main.dart'; // Import main.dart to access BeeColors
 
 class OnboardingScreen extends StatefulWidget {

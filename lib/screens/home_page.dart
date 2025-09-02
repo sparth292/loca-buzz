@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:iconsax/iconsax.dart';
+
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
 import 'messages_screen.dart';
 import 'explore_screen.dart';
-import 'profile_page.dart';
+
 
 // Apply Poppins font to all text in the app
 final TextTheme textTheme = GoogleFonts.poppinsTextTheme();

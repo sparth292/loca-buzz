@@ -16,7 +16,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
   bool _isLoading = false;
   bool? _selectedRole; // null = not selected, false = consumer, true = service provider
   late AnimationController _animationController;
-  late Animation<double> _buttonAnimation;
+  
 
   @override
   void initState() {
@@ -25,9 +25,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
       vsync: this,
       duration: const Duration(milliseconds: 300),
     );
-    _buttonAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
-    );
+    
   }
 
   @override

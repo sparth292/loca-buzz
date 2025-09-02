@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:iconsax/iconsax.dart';
 import '../main.dart';
 
 class ProfilePage extends StatefulWidget {

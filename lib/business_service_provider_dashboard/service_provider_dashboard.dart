@@ -198,10 +198,10 @@ class DashboardOverviewTab extends StatelessWidget {
             mainAxisSpacing: 12,
             childAspectRatio: 1.5,
             children: [
-              _ActionButton(icon: Icons.add_box_outlined, label: 'Add Service', onTap: () {}), 
-              _ActionButton(icon: Icons.photo_camera_outlined, label: 'Upload Images', onTap: () {}),
-              _ActionButton(icon: Icons.location_on_outlined, label: 'Update Location', onTap: () {}),
-              _ActionButton(icon: Icons.analytics_outlined, label: 'View Reports', onTap: () {}),
+              _ActionButton(icon: Icons.add_box_outlined, label: 'Add Service', onTap: () {}), // to add service 
+              _ActionButton(icon: Icons.photo_camera_outlined, label: 'Upload Images', onTap: () {}), // to add images
+              _ActionButton(icon: Icons.location_on_outlined, label: 'Update Location', onTap: () {}), // to update location
+              _ActionButton(icon: Icons.analytics_outlined, label: 'View Reports', onTap: () {}), // to view reports
             ],
           ),
         ],

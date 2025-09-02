@@ -18,7 +18,6 @@
     @override
     State<SignupPage> createState() => _SignupPageState();
   }
-
   class _SignupPageState extends State<SignupPage> {
     int currentStep = 0;
     bool acceptedTerms = false;
@@ -158,10 +157,10 @@
                   
                   Row(
                     children: [
-                      IconButton(
-                        onPressed: () => Navigator.pushReplacementNamed(context, EmailConfirmationScreen.route),
-                        icon: const Icon(Icons.arrow_back),
-                      ),
+                      // IconButton(
+                      //   onPressed: () => Navigator.pushReplacementNamed(context, EmailConfirmationScreen.route),
+                      //   icon: const Icon(Icons.arrow_back),
+                      // ),
                     ],
                   ),
                   const SizedBox(height: 8),

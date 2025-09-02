@@ -142,13 +142,13 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
                 _buildContent(context),
                 
                 // Animated Get Started Button
-                AnimatedPositioned(
-                  duration: const Duration(milliseconds: 300),
-                  left: 24,
-                  right: 24,
-                  bottom: _selectedRole != null ? 40 : -100,
-                  child: _buildGetStartedButton(),
-                ),
+                // AnimatedPositioned(
+                //   duration: const Duration(milliseconds: 300),
+                //   left: 24,
+                //   right: 24,
+                //   bottom: _selectedRole != null ? 40 : -100,
+                //   child: _buildGetStartedButton(),
+                // ),
               ],
             ),
     );
@@ -211,7 +211,6 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
             
             const Spacer(),
             
-            const Spacer(),
             
             // Get Started Button
             AnimatedSwitcher(

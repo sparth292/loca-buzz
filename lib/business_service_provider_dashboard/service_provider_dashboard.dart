@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import '../main.dart' show BeeColors;
+
 import 'listings_tab.dart';
 import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
+import 'service_provider_profile.dart';
 
 class ServiceProviderDashboard extends StatefulWidget {
   static const String route = '/service-provider-dashboard';
@@ -98,8 +100,30 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
                 // TODO: Navigate to settings
               },
             ),
+          // Profile Avatar
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
+            child: GestureDetector(
+              onTap: () {
+                Navigator.pushNamed(context, ServiceProviderProfile.route);
+              },
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: BeeColors.beeYellow.withOpacity(0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.person_outline,
+                  color: Colors.black87,
+                  size: 20,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
         ],
-        
       ),
       body: PageView(
         controller: _pageController,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart';
 import 'screens/login_screen.dart';
 import 'screens/sign_up_screen.dart';
 import 'screens/role_selection_screen.dart';
@@ -18,6 +19,7 @@ void main() async {
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6cmVvbW1qd3Jxcnd0YWV4ZHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4MTM0NTgsImV4cCI6MjA2NzM4OTQ1OH0.7GZTP4ZRbs-ypOl-z4hjH7w7ZQgAjOMkjzXzJ1GBLTM',
   );
   runApp(const MaterialApp(
+    debugShowCheckedModeBanner: false,
     home: LocaBuzzApp(),
   ));
 }
@@ -98,6 +100,7 @@ class LocaBuzzApp extends StatelessWidget {
         LocationSetupScreen.route: (context) => const LocationSetupScreen(),
         ProfilePage.route: (context) => const ProfilePage(),
         ServiceProviderDashboard.route: (context) => const ServiceProviderDashboard(),
+        ServiceProviderProfile.route: (context) => const ServiceProviderProfile(),
       },
     );
   }

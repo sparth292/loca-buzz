@@ -26,13 +26,13 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
     MessagesTab(),
   ];
 
-  final List<String> _titles = [
-    'Business Dashboard',
-    'Listings',
-    'Orders',
-    'Reports',
-    'Messages',
-  ];
+  // final List<String> _titles = [
+  //   'Business Dashboard',
+  //   'Listings',
+  //   'Orders',
+  //   'Reports',
+  //   'Messages',
+  // ];
 
   @override
   void dispose() {

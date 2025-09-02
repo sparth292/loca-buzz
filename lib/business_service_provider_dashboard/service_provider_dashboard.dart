@@ -57,10 +57,12 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      
       appBar: AppBar(
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
+            
             Text(
               'Loca',
               style: TextStyle(
@@ -97,6 +99,7 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
               },
             ),
         ],
+        
       ),
       body: PageView(
         controller: _pageController,

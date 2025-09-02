@@ -313,7 +313,6 @@ class _SignupPageState extends State<SignupPage> {
                 ),
               ),
               const SizedBox(height: 8),
-
               // Already have account
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,

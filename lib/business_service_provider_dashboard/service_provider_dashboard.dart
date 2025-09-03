@@ -4,6 +4,8 @@ import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
 import 'service_provider_profile.dart';
+import 'add_service.dart';
+import 'services_tab.dart';
 
 class ServiceProviderDashboard extends StatefulWidget {
   static const String route = '/service-provider-dashboard';
@@ -18,13 +20,29 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
-  final List<Widget> _screens = [
-    const DashboardOverviewTab(),
-    // const ServicesTab(),
-    const OrdersTab(),
-    ReportsTab(),
-    MessagesTab(),
-  ];
+  final List<Map<String, String>> _services = [];
+
+  late List<Widget> _screens;
+
+  @override
+  void initState() {
+    super.initState();
+    _screens = [
+      DashboardOverviewTab(onServiceAdded: _handleServiceAdded),
+      ServicesTab(services: _services),
+      const OrdersTab(),
+      ReportsTab(),
+      MessagesTab(),
+    ];
+  }
+
+  void _handleServiceAdded(Map<String, String> service) {
+    setState(() {
+      _services.add(service);
+      _currentIndex = 1; // Switch to Services tab
+      _pageController.jumpToPage(1);
+    });
+  }
 
   // final List<String> _titles = [
   //   'Business Dashboard',
@@ -136,6 +154,10 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
             label: 'Overview',
           ),
           BottomNavigationBarItem(
+            icon: Icon(Icons.design_services),
+            label: 'Services',
+          ),
+          BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined),
             label: 'Orders',
           ),
@@ -175,7 +197,8 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
 
 // Dashboard Overview Tab
 class DashboardOverviewTab extends StatelessWidget {
-  const DashboardOverviewTab({super.key});
+  final void Function(Map<String, String>) onServiceAdded;
+  const DashboardOverviewTab({super.key, required this.onServiceAdded});
 
   @override
   Widget build(BuildContext context) {
@@ -212,7 +235,15 @@ class DashboardOverviewTab extends StatelessWidget {
             mainAxisSpacing: 12,
             childAspectRatio: 1.5,
             children: [
-              _ActionButton(icon: Icons.add_box_outlined, label: 'Add Service', onTap: () {}), // to add service 
+              _ActionButton(icon: Icons.add_box_outlined, label: 'Add Service', onTap: () async {
+  final result = await Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => const AddServicePage()),
+  );
+  if (result is Map<String, String>) {
+    onServiceAdded(result);
+  }
+}), // to add service 
               _ActionButton(icon: Icons.photo_camera_outlined, label: 'Upload Images', onTap: () {}), // to add images
               _ActionButton(icon: Icons.location_on_outlined, label: 'Update Location', onTap: () {}), // to update location
               _ActionButton(icon: Icons.analytics_outlined, label: 'View Reports', onTap: () {}), // to view reports

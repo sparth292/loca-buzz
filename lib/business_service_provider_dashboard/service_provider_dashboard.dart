@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart' show BeeColors;
 
-import 'listings_tab.dart';
+import 'listings_tab.dart' show ServicesTab;
 import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
@@ -20,10 +20,10 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
   int _currentIndex = 0;
   final PageController _pageController = PageController();
 
-  final List<Widget> _screens = const [
-    DashboardOverviewTab(),
-    ListingsTab(),
-    OrdersTab(),
+  final List<Widget> _screens = [
+    const DashboardOverviewTab(),
+    // const ServicesTab(),
+    const OrdersTab(),
     ReportsTab(),
     MessagesTab(),
   ];
@@ -49,11 +49,10 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
   }
 
   void _onItemTapped(int index) {
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    setState(() {
+      _currentIndex = index;
+      _pageController.jumpToPage(index);
+    });
   }
 
   @override
@@ -87,12 +86,6 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Colors.black87),
-            onPressed: () {
-              // TODO: Navigate to notifications
-            },
-          ),
           if (_currentIndex == 0) // Show settings only on dashboard
             IconButton(
               icon: const Icon(Icons.settings_outlined, color: Colors.black87),
@@ -143,10 +136,6 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard),
             label: 'Overview',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.inventory_2_outlined),
-            label: 'Listings',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.shopping_cart_outlined),

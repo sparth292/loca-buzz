@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import '../main.dart' show BeeColors;
-
-import 'listings_tab.dart' show ServicesTab;
 import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';

@@ -51,7 +51,7 @@ class _DashboardCard extends StatelessWidget {
             ),
             child: Icon(icon, color: BeeColors.beeYellow),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           Text(
             title,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -121,18 +121,32 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
   
   // Save profile data to Supabase
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please fill in all required fields')),
+        );
+      }
+      return;
+    }
     
     try {
       final user = supabase.auth.currentUser;
-      if (user == null) return;
+      if (user == null) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('User not authenticated')),
+          );
+        }
+        return;
+      }
       
-      await supabase.from('profiles').upsert({
+      final response = await supabase.from('profiles').upsert({
         'id': user.id,
-        'full_name': _fullNameController.text,
-        'phone': _phoneController.text,
+        'full_name': _fullNameController.text.trim(),
+        'phone': _phoneController.text.trim(),
         'is_service_provider': true,
-      });
+      }).select();
       
       if (mounted) {
         setState(() => _isEditing = false);

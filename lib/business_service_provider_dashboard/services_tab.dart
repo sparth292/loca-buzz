@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart' show BeeColors;
 
 class ServicesTab extends StatefulWidget {
-  final List<Map<String, String>> services;
+  final List<Map<String, dynamic>> services;
   const ServicesTab({Key? key, required this.services}) : super(key: key);
 
   @override
@@ -30,21 +30,51 @@ class _ServicesTabState extends State<ServicesTab> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(service['name'] ?? '',
-                            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('#${service['id'] ?? ''}', style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.grey)),
+                            Text('Profile: ${service['profile_id'] ?? ''}', style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Text(service['service_name'] ?? '', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                         const SizedBox(height: 8),
                         Text(service['description'] ?? '', style: const TextStyle(fontSize: 16)),
                         const SizedBox(height: 8),
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('₹${service['price'] ?? ''}',
-                                style: const TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold)),
-                            Icon(Icons.design_services, color: BeeColors.beeYellow),
+                            Icon(Icons.workspace_premium, color: BeeColors.beeYellow, size: 18),
+                            const SizedBox(width: 6),
+                            Text('Experience: ${service['experience_years'] ?? ''} years', style: const TextStyle(fontSize: 14)),
                           ],
                         ),
-                      ],
+                        const SizedBox(height: 8),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Price: ${service['price_range'] ?? ''}', style: const TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold)),
+                            Icon(Icons.design_services, color: BeeColors.beeYellow),
+                          ],
+                        ), 
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(service['description'] ?? '', style: const TextStyle(fontSize: 16)),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('₹${service['price'] ?? ''}',
+                                    style: const TextStyle(fontSize: 16, color: Colors.green, fontWeight: FontWeight.bold)),
+                                Icon(Icons.design_services, color: BeeColors.beeYellow),
+                              ],
+                            ),
+                          ],
                     ),
+                      ],
+                  )
                   ),
                 );
               },

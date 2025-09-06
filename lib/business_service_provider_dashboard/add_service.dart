@@ -242,17 +242,23 @@ class _AddServicePageState extends State<AddServicePage> {
                     val == null || val.trim().isEmpty ? 'Enter a service name' : null,
               ),
               const SizedBox(height: 18),
-              const SizedBox(height: 16),
+              const SizedBox(height: 8),
+              Text(
+                'Service Description',
+                style: TextStyle(
+                  fontSize: 16,
+                  color: Colors.black87,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _serviceDescController,
                 maxLines: 3,
                 decoration: InputDecoration(
-                  labelText: 'Service Description',
-                  hintText: 'Describe your service in detail',
                   filled: true,
                   fillColor: Colors.white,
-                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
@@ -331,13 +337,17 @@ class _AddServicePageState extends State<AddServicePage> {
                 ],
               ),
               const SizedBox(height: 18),
+              const SizedBox(height: 16),
               DropdownButtonFormField<String>(
                 value: _selectedAvailability,
+                isExpanded: true,
+                hint: const Text('Select availability'),
                 decoration: InputDecoration(
+                  labelText: 'Availability',
                   filled: true,
                   fillColor: Colors.white,
-                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(230)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),

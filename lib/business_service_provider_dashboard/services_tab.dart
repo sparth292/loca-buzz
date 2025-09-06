@@ -58,29 +58,23 @@ class _ServicesTabState extends State<ServicesTab> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: BeeColors.background,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddService,
-        backgroundColor: BeeColors.beeYellow,
-        child: const Icon(Icons.add, color: Colors.black),
-      ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _services.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No services added yet.',
-                    style: TextStyle(fontSize: 18, color: Colors.grey),
-                  ),
-                )
-              : RefreshIndicator(
-                  onRefresh: _fetchServices,
-                  child: ListView.separated(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _services.length,
-                    separatorBuilder: (_, __) => const SizedBox(height: 16),
-                    itemBuilder: (context, index) {
+    Widget body;
+    
+    if (_isLoading) {
+      body = const Center(child: CircularProgressIndicator());
+    } else if (_services.isEmpty) {
+      body = const Center(
+        child: Text(
+          'No services added yet.',
+          style: TextStyle(fontSize: 18, color: Colors.grey),
+        ),
+      );
+    } else {
+      body = ListView.separated(
+        padding: const EdgeInsets.all(16),
+        itemCount: _services.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 16),
+        itemBuilder: (context, index) {
                       final service = _services[index];
                       return Card(
                         shape: RoundedRectangleBorder(
@@ -154,14 +148,23 @@ class _ServicesTabState extends State<ServicesTab> {
                         ),
                       );
                     },
-                        
-                        ), 
-                        
-                  )
-                  );
-               
-              
+      );
+      
+      // Wrap with RefreshIndicator only if there are items
+      body = RefreshIndicator(
+        onRefresh: _fetchServices,
+        child: body,
+      );
+    }
     
-    
+    return Scaffold(
+      backgroundColor: BeeColors.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddService,
+        backgroundColor: BeeColors.beeYellow,
+        child: const Icon(Icons.add, color: Colors.black),
+      ),
+      body: body,
+    );
   }
 }

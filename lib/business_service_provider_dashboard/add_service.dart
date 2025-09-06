@@ -33,6 +33,17 @@ class _AddServicePageState extends State<AddServicePage> {
   ];
   String? _selectedAvailability;
 
+  final List<String> _categoryOptions = [
+    'electrician',
+    'groceries',
+    'food',
+    'plumber',
+    'mechanic',
+    'cleaning',
+    'others',
+  ];
+  String? _selectedCategory;
+
   Future<void> _pickImage() async {
     final pickedFile = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 80);
     if (pickedFile != null) {
@@ -106,6 +117,12 @@ class _AddServicePageState extends State<AddServicePage> {
         );
         return;
       }
+      if (_selectedCategory == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a category')),
+        );
+        return;
+      }
       setState(() => _isLoading = true);
 
       // Upload image to Supabase Storage
@@ -128,6 +145,7 @@ class _AddServicePageState extends State<AddServicePage> {
         'experience_years': int.tryParse(_experienceYearsController.text) ?? 0,
         'price_range': _priceRangeController.text,
         'image_url': imageUrl,
+        'category': _selectedCategory,
         'availability': _selectedAvailability,
       };
 
@@ -337,7 +355,44 @@ class _AddServicePageState extends State<AddServicePage> {
                 ],
               ),
               const SizedBox(height: 18),
-              const SizedBox(height: 16),
+              const SizedBox(height: 18),
+              DropdownButtonFormField<String>(
+                value: _selectedCategory,
+                isExpanded: true,
+                hint: const Text('Select category'),
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  filled: true,
+                  fillColor: Colors.white,
+                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: const BorderSide(color: BeeColors.beeYellow, width: 2),
+                  ),
+                ),
+                items: _categoryOptions.map((category) {
+                  return DropdownMenuItem(
+                    value: category,
+                    child: Text(category[0].toUpperCase() + category.substring(1)),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
+                validator: (val) => val == null || val.isEmpty ? 'Please select a category' : null,
+              ),
+              const SizedBox(height: 18),
               DropdownButtonFormField<String>(
                 value: _selectedAvailability,
                 isExpanded: true,

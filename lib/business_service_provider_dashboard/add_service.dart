@@ -219,9 +219,11 @@ class _AddServicePageState extends State<AddServicePage> {
               TextFormField(
                 controller: _serviceNameController,
                 decoration: InputDecoration(
+                  labelText: 'Service Name',
+                  hintText: 'e.g., Plumbing, Electrician, Cleaning',
                   filled: true,
                   fillColor: Colors.white,
-                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(230)),
+                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -240,13 +242,16 @@ class _AddServicePageState extends State<AddServicePage> {
                     val == null || val.trim().isEmpty ? 'Enter a service name' : null,
               ),
               const SizedBox(height: 18),
+              const SizedBox(height: 16),
               TextFormField(
                 controller: _serviceDescController,
                 maxLines: 3,
                 decoration: InputDecoration(
+                  labelText: 'Service Description',
+                  hintText: 'Describe your service in detail',
                   filled: true,
                   fillColor: Colors.white,
-                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(230)),
+                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
                   contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
@@ -272,9 +277,11 @@ class _AddServicePageState extends State<AddServicePage> {
                       controller: _experienceYearsController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
+                        labelText: 'Experience (years)',
+                        hintText: 'e.g., 5',
                         filled: true,
                         fillColor: Colors.white,
-                        hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(230)),
+                        hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),
@@ -298,9 +305,11 @@ class _AddServicePageState extends State<AddServicePage> {
                     child: TextFormField(
                       controller: _priceRangeController,
                       decoration: InputDecoration(
+                        labelText: 'Price Range',
+                        hintText: 'e.g., 500-1000 INR',
                         filled: true,
                         fillColor: Colors.white,
-                        hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(230)),
+                        hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
                         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(14),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locabuzz/business_service_provider_dashboard/add_service.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import '../main.dart' show BeeColors;
 
@@ -43,10 +44,27 @@ class _ServicesTabState extends State<ServicesTab> {
     }
   }
 
+  Future<void> _navigateToAddService() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddServicePage()),
+    );
+    
+    if (result != null && mounted) {
+      // Refresh the services list when returning from AddServicePage
+      await _fetchServices();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BeeColors.background,
+      floatingActionButton: FloatingActionButton(
+        onPressed: _navigateToAddService,
+        backgroundColor: BeeColors.beeYellow,
+        child: const Icon(Icons.add, color: Colors.black),
+      ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _services.isEmpty

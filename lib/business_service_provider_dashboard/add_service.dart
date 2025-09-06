@@ -277,7 +277,7 @@ class _AddServicePageState extends State<AddServicePage> {
                       controller: _experienceYearsController,
                       keyboardType: TextInputType.number,
                       decoration: InputDecoration(
-                        labelText: 'Experience (years)',
+                        labelText: 'Experience',
                         hintText: 'e.g., 5',
                         filled: true,
                         fillColor: Colors.white,

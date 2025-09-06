@@ -29,7 +29,7 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
     super.initState();
     _screens = [
       DashboardOverviewTab(onServiceAdded: _handleServiceAdded),
-      ServicesTab(services: _services),
+      ServicesTab(),
       const OrdersTab(),
       ReportsTab(),
       MessagesTab(),

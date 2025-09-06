@@ -71,10 +71,27 @@ class _ServicesTabState extends State<ServicesTab> {
       final user = Supabase.instance.client.auth.currentUser;
       if (user == null) return;
 
+      // First, get the profile ID from the profiles table
+      final profileResponse = await Supabase.instance.client
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .single();
+
+      if (profileResponse == null) {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+        return;
+      }
+
+      final profileId = profileResponse['id'] as String;
+
+      // Then fetch services that match this profile_id
       final response = await Supabase.instance.client
           .from('service_providers')
           .select()
-          .eq('profile_id', user.id);
+          .eq('profile_id', profileId);
 
       if (mounted) {
         setState(() {
@@ -85,6 +102,9 @@ class _ServicesTabState extends State<ServicesTab> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Error loading services')),
+        );
       }
       debugPrint('Error fetching services: $e');
     }

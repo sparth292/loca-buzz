@@ -3,9 +3,11 @@ import 'package:google_fonts/google_fonts.dart';
 import '../main.dart' show BeeColors, supabase;
 
 class ProfilePage extends StatefulWidget {
-  static const String route = '/service-provider-profile';
+  static const String route = '/profile';
   
-  const ProfilePage({super.key});
+  final VoidCallback? onProfileUpdated;
+  
+  const ProfilePage({super.key, this.onProfileUpdated});
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -240,19 +242,6 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Profile',
-          style: GoogleFonts.poppins(
-            color: BeeColors.beeBlack,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
-          ),
-        ),
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: true,
-      ),
       backgroundColor: BeeColors.background,
       body: _isLoading
           ? const Center(

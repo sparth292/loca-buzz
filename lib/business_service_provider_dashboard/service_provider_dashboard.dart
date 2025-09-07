@@ -107,7 +107,11 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, ServiceProviderProfile.route);
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ServiceProviderProfile(),
+                  ),
+                );
               },
               child: Container(
                 width: 36,

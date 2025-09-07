@@ -23,11 +23,32 @@ class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController(initialPage: 0);
 
   // Handle tab selection
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedBottomNavIndex = index;
-      _pageController.jumpToPage(index);
-    });
+  void _onItemTapped(int index) async {
+    if (index == 3) {
+      // Handle profile navigation separately
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProfilePage(
+            onProfileUpdated: () {
+              // This will be called when the profile is updated
+              setState(() {});
+            },
+          ),
+        ),
+      );
+      
+      // If we return from profile with a result, refresh the page
+      if (result == true) {
+        setState(() {});
+      }
+    } else {
+      // Normal tab navigation
+      setState(() {
+        _selectedBottomNavIndex = index;
+        _pageController.jumpToPage(index);
+      });
+    }
   }
 
   final List<Map<String, dynamic>> _categories = [
@@ -328,8 +349,8 @@ class _HomePageState extends State<HomePage> {
           const ExploreScreen(),
           // Messages Screen
           const MessagesScreen(),
-          // Profile Page
-          const ProfilePage(),
+          // Empty container for profile tab since we're navigating to it
+          Container(),
         ],
       ),
       bottomNavigationBar: Container(

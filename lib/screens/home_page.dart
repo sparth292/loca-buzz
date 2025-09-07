@@ -4,6 +4,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
 import 'explore_screen.dart';
 import 'messages_screen.dart';
+import 'profile_page.dart';
 
 // Apply Poppins font to all text in the app
 final TextTheme textTheme = GoogleFonts.poppinsTextTheme();
@@ -23,14 +24,10 @@ class _HomePageState extends State<HomePage> {
 
   // Handle tab selection
   void _onItemTapped(int index) {
-    if (index == 3) { // Profile tab
-      Navigator.of(context, rootNavigator: true).pushNamed('/profile');
-    } else {
-      setState(() {
-        _selectedBottomNavIndex = index;
-        _pageController.jumpToPage(index);
-      });
-    }
+    setState(() {
+      _selectedBottomNavIndex = index;
+      _pageController.jumpToPage(index);
+    });
   }
 
   final List<Map<String, dynamic>> _categories = [
@@ -144,9 +141,14 @@ class _HomePageState extends State<HomePage> {
       ),
       body: PageView(
         controller: _pageController,
-        physics: const NeverScrollableScrollPhysics(), // Disable swiping between pages
+        physics: const NeverScrollableScrollPhysics(),
+        onPageChanged: (index) {
+          setState(() {
+            _selectedBottomNavIndex = index;
+          });
+        },
         children: [
-          // Home Page Content
+          // Home Tab
           SingleChildScrollView(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             child: Column(
@@ -155,101 +157,102 @@ class _HomePageState extends State<HomePage> {
                 // Carousel with PageView
                 SizedBox(
                   height: 160,
-                  child: Column(
+                  child: Stack(
                     children: [
-                      Expanded(
-                        child: PageView.builder(
-                          controller: _carouselController,
-                          itemCount: _carouselItems.length,
-                          onPageChanged: (index) {},
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 8.0),
-                              child: Container(
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(16),
-                                  color: _carouselItems[index]['backgroundColor'],
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withOpacity(0.1),
-                                      blurRadius: 10,
-                                      offset: const Offset(0, 4),
-                                    ),
-                                  ],
+                      PageView.builder(
+                        controller: _carouselController,
+                        itemCount: _carouselItems.length,
+                        itemBuilder: (context, index) {
+                          final item = _carouselItems[index];
+                          return Container(
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
+                            decoration: BoxDecoration(
+                              color: item['backgroundColor'],
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.1),
+                                  blurRadius: 10,
+                                  offset: const Offset(0, 4),
                                 ),
-                                child: Stack(
-                                  children: [
-                                    Positioned(
-                                      right: 16,
-                                      top: 16,
-                                      bottom: 16,
-                                      width: 100,
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(12),
-                                        child: Container(
-                                          color: Colors.white.withOpacity(0.2),
-                                          child: Icon(
-                                            _carouselItems[index]['icon'],
-                                            size: 50,
-                                            color: Colors.white,
-                                          ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Positioned(
+                                  right: 16,
+                                  top: 16,
+                                  bottom: 16,
+                                  width: 100,
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      color: Colors.white.withOpacity(0.2),
+                                      child: Icon(
+                                        item['icon'],
+                                        size: 50,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        item['title'],
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white,
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
-                                    Padding(
-                                      padding: const EdgeInsets.all(20.0),
-                                      child: Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            _carouselItems[index]['title'],
-                                            style: GoogleFonts.poppins(
-                                              color: Colors.white,
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-                                          Text(
-                                            _carouselItems[index]['subtitle'],
-                                            style: GoogleFonts.poppins(
-                                              color: Colors.white.withOpacity(0.9),
-                                              fontSize: 13,
-                                            ),
-                                          ),
-                                        ],
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        item['subtitle'],
+                                        style: GoogleFonts.poppins(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 13,
+                                        ),
                                       ),
-                                    ),
-                                  ],
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SmoothPageIndicator(
-                        controller: _carouselController,
-                        count: _carouselItems.length,
-                        effect: const WormEffect(
-                          dotHeight: 8,
-                          dotWidth: 8,
-                          activeDotColor: BeeColors.beeYellow,
-                          dotColor: Colors.grey,
-                        ),
-                        onDotClicked: (index) {
-                          _carouselController.animateToPage(
-                            index,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
+                              ],
+                            ),
                           );
                         },
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 8,
+                        child: Center(
+                          child: SmoothPageIndicator(
+                            controller: _carouselController,
+                            count: _carouselItems.length,
+                            effect: const WormEffect(
+                              dotHeight: 8,
+                              dotWidth: 8,
+                              activeDotColor: BeeColors.beeYellow,
+                              dotColor: Colors.grey,
+                            ),
+                            onDotClicked: (index) {
+                              _carouselController.animateToPage(
+                                index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeInOut,
+                              );
+                            },
+                          ),
+                        ),
                       ),
                     ],
                   ),
                 ),
-                
                 const SizedBox(height: 24),
                 
                 // Categories
@@ -317,6 +320,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
                 // Single spacing after featured businesses
+                const SizedBox(height: 20),
               ],
             ),
           ),
@@ -324,7 +328,8 @@ class _HomePageState extends State<HomePage> {
           const ExploreScreen(),
           // Messages Screen
           const MessagesScreen(),
-          // Profile tab removed - using dedicated profile page
+          // Profile Page
+          const ProfilePage(),
         ],
       ),
       bottomNavigationBar: Container(

@@ -102,13 +102,6 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
         backgroundColor: Colors.white,
         elevation: 0,
         actions: [
-          if (_currentIndex == 0) // Show settings only on dashboard
-            IconButton(
-              icon: const Icon(Icons.settings_outlined, color: Colors.black87),
-              onPressed: () {
-                // TODO: Navigate to settings
-              },
-            ),
           // Profile Avatar
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),

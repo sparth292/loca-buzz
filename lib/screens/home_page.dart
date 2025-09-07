@@ -21,9 +21,16 @@ class _HomePageState extends State<HomePage> {
   int _selectedBottomNavIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
 
-  // Navigate to profile page using the correct route
-  void _navigateToProfile() {
-    Navigator.of(context, rootNavigator: true).pushNamed('/profile');
+  // Handle tab selection
+  void _onItemTapped(int index) {
+    if (index == 3) { // Profile tab
+      Navigator.of(context, rootNavigator: true).pushNamed('/profile');
+    } else {
+      setState(() {
+        _selectedBottomNavIndex = index;
+        _pageController.jumpToPage(index);
+      });
+    }
   }
 
   final List<Map<String, dynamic>> _categories = [
@@ -77,36 +84,63 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
+  // Get the current page title based on the selected tab
+  String _getAppBarTitle() {
+    switch (_selectedBottomNavIndex) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Explore';
+      case 2:
+        return 'Messages';
+      case 3:
+        return 'Profile';
+      default:
+        return 'LocaBuzz';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const BrandTitle(fontSize: 24, textAlign: TextAlign.left),
+        title: _selectedBottomNavIndex == 0 
+            ? const BrandTitle(fontSize: 24, textAlign: TextAlign.left)
+            : Text(
+                _getAppBarTitle(),
+                style: const TextStyle(
+                  color: BeeColors.beeBlack,
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: BeeColors.beeBlack,
-        actions: [
-          Stack(
-            children: [
-              IconButton(
-                icon: const Icon(Icons.notifications_none, size: 26),
-                onPressed: () {},
-              ),
-              Positioned(
-                right: 10,
-                top: 10,
-                child: Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
+        actions: _selectedBottomNavIndex == 3 
+            ? null // No actions on profile tab
+            : [
+                Stack(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.notifications_none, size: 26),
+                      onPressed: () {},
+                    ),
+                    Positioned(
+                      right: 10,
+                      top: 10,
+                      child: Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
       ),
       body: PageView(
         controller: _pageController,
@@ -310,16 +344,7 @@ class _HomePageState extends State<HomePage> {
           ),
           child: BottomNavigationBar(
             currentIndex: _selectedBottomNavIndex,
-            onTap: (index) {
-              if (index == 3) { // Profile tab index
-                _navigateToProfile();
-                return;
-              }
-              setState(() {
-                _selectedBottomNavIndex = index;
-                _pageController.jumpToPage(index);
-              });
-            },
+            onTap: _onItemTapped,
             items: const [
               BottomNavigationBarItem(
                 icon: Icon(Icons.home_outlined),

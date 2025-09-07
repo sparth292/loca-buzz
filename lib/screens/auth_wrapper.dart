@@ -1,10 +1,11 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:locabuzz/business_service_provider_dashboard/service_provider_dashboard.dart';
 import 'package:locabuzz/screens/onboarding/onboarding_screen.dart';
 import 'package:locabuzz/screens/home_page.dart';
 import 'package:locabuzz/utils/auth_state.dart' as local_auth;
-import '../main.dart';
+import '../main.dart' show supabase;
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -18,15 +19,39 @@ class _AuthWrapperState extends State<AuthWrapper> {
   bool _isLoggedIn = false;
   String? _userRole;
 
+  StreamSubscription<AuthState>? _authStateSubscription;
+
   @override
   void initState() {
     super.initState();
     _checkAuthState();
+    
+    // Listen to auth state changes
+    _authStateSubscription = supabase.auth.onAuthStateChange.listen((authState) {
+      final session = authState.session;
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = session != null;
+          _isLoading = false;
+          
+          // If user is logged out, clear the role
+          if (session == null) {
+            _userRole = null;
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription?.cancel();
+    super.dispose();
   }
 
   Future<void> _checkAuthState() async {
     try {
-      // First check if we have a valid session
+      // Check if we have a valid session
       final session = supabase.auth.currentSession;
       
       if (session != null) {
@@ -45,23 +70,18 @@ class _AuthWrapperState extends State<AuthWrapper> {
         final isLoggedIn = await local_auth.AuthState.isLoggedIn();
         
         if (isLoggedIn) {
-          // Try to restore session using refresh token
+          // Try to get the user role from local storage
           try {
-            // Supabase automatically handles session restoration via the persisted refresh token
-            final currentUser = supabase.auth.currentUser;
-            if (currentUser != null) {
-              final userRole = await local_auth.AuthState.getUserRole();
-              if (mounted) {
-                setState(() {
-                  _isLoggedIn = true;
-                  _userRole = userRole;
-                  _isLoading = false;
-                });
-                return;
-              }
+            final userRole = await local_auth.AuthState.getUserRole();
+            if (mounted) {
+              setState(() {
+                _isLoggedIn = true;
+                _userRole = userRole;
+                _isLoading = false;
+              });
             }
           } catch (e) {
-            // If we can't restore session, log out
+            debugPrint('Error getting user role: $e');
             await local_auth.AuthState.logOut();
           }
         }
@@ -75,7 +95,7 @@ class _AuthWrapperState extends State<AuthWrapper> {
         }
       }
     } catch (e) {
-      // If any error occurs, default to not logged in
+      debugPrint('Error checking auth state: $e');
       if (mounted) {
         setState(() {
           _isLoggedIn = false;

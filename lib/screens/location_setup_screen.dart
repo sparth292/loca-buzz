@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:geolocator/geolocator.dart';
-import 'package:locabuzz/screens/home_page.dart';
-import '../main.dart';
+import 'package:location/location.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../main.dart' show BeeColors, BrandTitle;
 
 class LocationSetupScreen extends StatefulWidget {
   static const String route = '/location-setup';
@@ -16,6 +16,8 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
   final TextEditingController _locationController = TextEditingController();
   bool _isLoading = false;
   bool _locationEnabled = false;
+  LocationData? _currentLocation;
+  final Location _location = Location();
 
   @override
   void initState() {
@@ -24,30 +26,31 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
   }
 
   Future<void> _checkLocationPermission() async {
-    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _locationEnabled = false;
-      });
-      return;
-    }
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
 
-    LocationPermission permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-      if (permission == LocationPermission.denied) {
+    // Check if location service is enabled
+    serviceEnabled = await _location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await _location.requestService();
+      if (!serviceEnabled) {
         setState(() {
           _locationEnabled = false;
         });
         return;
       }
     }
-    
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _locationEnabled = false;
-      });
-      return;
+
+    // Check location permission
+    permissionGranted = await _location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) {
+        setState(() {
+          _locationEnabled = false;
+        });
+        return;
+      }
     }
 
     setState(() {
@@ -64,35 +67,44 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
     });
 
     try {
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
+      _currentLocation = await _location.getLocation();
       
-      // In a real app, you would use geocoding to get the address from coordinates
-      setState(() {
-        _locationController.text = "${position.latitude.toStringAsFixed(4)}, ${position.longitude.toStringAsFixed(4)}";
-      });
+      if (_currentLocation != null) {
+        setState(() {
+          _locationController.text = "${_currentLocation!.latitude!.toStringAsFixed(4)}, ${_currentLocation!.longitude!.toStringAsFixed(4)}";
+        });
+      }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not get current location')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Could not get current location')),
+        );
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
   void _onConfirmLocation() {
-    if (_locationController.text.isEmpty) {
+    if (_locationController.text.isEmpty || _currentLocation == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a location')),
+        const SnackBar(content: Text('Please wait while we get your location')),
       );
       return;
     }
     
-    // In a real app, you would save the location and radius to shared preferences or state management
-    Navigator.pushReplacementNamed(context, HomePage.route);
+    // Return the location data in 'lat,long' format
+    if (mounted) {
+      Navigator.of(context).pop({
+        'latitude': _currentLocation!.latitude,
+        'longitude': _currentLocation!.longitude,
+        'address': _locationController.text,
+      });
+    }
   }
 
   @override
@@ -296,12 +308,13 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
               // Skip for now button
               TextButton(
                 onPressed: () {
-                  Navigator.pushReplacementNamed(context, HomePage.route);
+                  Navigator.of(context).pop();
                 },
-                child: const Text(
+                child: Text(
                   'Skip for now',
-                  style: TextStyle(
-                    color: BeeColors.beeGrey,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 14,
                   ),
                 ),
               ),

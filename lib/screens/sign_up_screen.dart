@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:location/location.dart';
 
 import '../main.dart' show BeeColors, supabase, BrandTitle;
 import 'email_confirmation_screen.dart';
@@ -9,8 +10,13 @@ import 'login_screen.dart';
 class SignupPage extends StatefulWidget {
   static const String route = '/signup';
   final bool isServiceProvider;
+  final Map<String, dynamic>? initialLocation;
 
-  const SignupPage({super.key, this.isServiceProvider = false});
+  const SignupPage({
+    super.key, 
+    this.isServiceProvider = false,
+    this.initialLocation,
+  });
 
   @override
   State<SignupPage> createState() => _SignupPageState();
@@ -83,6 +89,9 @@ class _SignupPageState extends State<SignupPage> {
             : _usernameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'is_service_provider': widget.isServiceProvider,
+        'location': widget.initialLocation != null 
+            ? '${widget.initialLocation!['latitude']},${widget.initialLocation!['longitude']}'
+            : null,
         'created_at': DateTime.now().toIso8601String(),
       });
 

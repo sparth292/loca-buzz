@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'login_screen.dart';
 import 'sign_up_screen.dart';
+import 'location_setup_screen.dart';
 import '../main.dart' show BeeColors;
 // complete the role selection screen
 class RoleSelectionScreen extends StatefulWidget {
@@ -39,7 +40,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
       color: BeeColors.beeYellow,
       borderRadius: BorderRadius.circular(12),
       child: InkWell(
-        onTap: _proceedToSignUp,
+        onTap: _proceedToLocationSetup,
         borderRadius: BorderRadius.circular(12),
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
@@ -74,7 +75,7 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
     });
   }
 
-  Future<void> _proceedToSignUp() async {
+  Future<void> _proceedToLocationSetup() async {
     if (_selectedRole == null) return;
     
     setState(() {
@@ -86,10 +87,25 @@ class _RoleSelectionScreenState extends State<RoleSelectionScreen> with SingleTi
       await prefs.setBool('isServiceProvider', _selectedRole!);
       
       if (!mounted) return;
+      
+      // Navigate to Location Setup screen first
+      final locationData = await Navigator.push<Map<String, dynamic>>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const LocationSetupScreen(),
+        ),
+      );
+
+      if (!mounted) return;
+      
+      // Then navigate to Signup with the role and location data
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (context) => SignupPage(isServiceProvider: _selectedRole!),
+          builder: (context) => SignupPage(
+            isServiceProvider: _selectedRole!,
+            initialLocation: locationData,
+          ),
         ),
       );
     } catch (e) {

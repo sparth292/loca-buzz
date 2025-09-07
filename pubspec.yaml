@@ -44,6 +44,7 @@ dependencies:
   supabase_flutter:
   lottie:
   image_picker:
+  location: ^8.0.1
 
 dev_dependencies:
   flutter_test:

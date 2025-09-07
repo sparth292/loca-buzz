@@ -80,7 +80,8 @@ class _SignupPageState extends State<SignupPage> {
         throw Exception('Failed to create user account');
       }
 
-      await supabase.from('profiles').insert({
+      // Prepare profile data
+      final profileData = {
         'id': authResponse.user!.id,
         'email': email,
         'full_name': _fullNameController.text.trim(),
@@ -89,11 +90,19 @@ class _SignupPageState extends State<SignupPage> {
             : _usernameController.text.trim(),
         'phone': _phoneController.text.trim(),
         'is_service_provider': widget.isServiceProvider,
-        'location': widget.initialLocation != null 
-            ? '${widget.initialLocation!['latitude']},${widget.initialLocation!['longitude']}'
-            : null,
         'created_at': DateTime.now().toIso8601String(),
-      });
+      };
+
+      // Add location if available (format: "lat,long")
+      if (widget.initialLocation != null && 
+          widget.initialLocation!['latitude'] != null && 
+          widget.initialLocation!['longitude'] != null) {
+        profileData['location'] = 
+            '${widget.initialLocation!['latitude']},${widget.initialLocation!['longitude']}';
+      }
+
+      // Insert profile data
+      await supabase.from('profiles').insert(profileData);
 
       if (!mounted) return;
 

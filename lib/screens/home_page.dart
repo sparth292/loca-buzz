@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
 import 'explore_screen.dart';
 import 'messages_screen.dart';
@@ -242,30 +241,7 @@ class _HomePageState extends State<HomePage> {
                           );
                         },
                       ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 8,
-                        child: Center(
-                          child: SmoothPageIndicator(
-                            controller: _carouselController,
-                            count: _carouselItems.length,
-                            effect: const WormEffect(
-                              dotHeight: 8,
-                              dotWidth: 8,
-                              activeDotColor: BeeColors.beeYellow,
-                              dotColor: Colors.grey,
-                            ),
-                            onDotClicked: (index) {
-                              _carouselController.animateToPage(
-                                index,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeInOut,
-                              );
-                            },
-                          ),
-                        ),
-                      ),
+                      // Removed page indicator dots as requested
                     ],
                   ),
                 ),

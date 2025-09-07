@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../main.dart' show BeeColors, supabase;
 
-class ServiceProviderProfile extends StatefulWidget {
+class ProfilePage extends StatefulWidget {
   static const String route = '/service-provider-profile';
   
-  const ServiceProviderProfile({super.key});
+  const ProfilePage({super.key});
 
   @override
-  State<ServiceProviderProfile> createState() => _ServiceProviderProfileState();
+  State<ProfilePage> createState() => _ProfilePageState();
 }
 
-class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
+class _ProfilePageState extends State<ProfilePage> {
   bool _isLoading = true;
   
   // Form controllers

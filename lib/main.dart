@@ -13,7 +13,6 @@ import 'package:locabuzz/screens/auth_wrapper.dart';
 
 // Dashboards
 import 'package:locabuzz/business_service_provider_dashboard/service_provider_dashboard.dart' as dashboard;
-import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart' as profile;
 
 // Initialize Supabase
 final supabase = Supabase.instance.client;
@@ -106,7 +105,7 @@ class LocaBuzzApp extends StatelessWidget {
         '/role-selection': (context) => const RoleSelectionScreen(),
         '/home': (context) => const HomePage(),
         '/service-provider-dashboard': (context) => const dashboard.ServiceProviderDashboard(),
-        '/service-provider-profile': (context) => const profile.ServiceProviderProfile(),
+        '/service-provider-profile': (context) => const ProfilePage(),
         '/profile': (context) => const ProfilePage(),
       },
     );

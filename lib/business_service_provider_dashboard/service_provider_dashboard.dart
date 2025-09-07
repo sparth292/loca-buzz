@@ -3,7 +3,7 @@ import '../main.dart' show BeeColors;
 import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
-import 'service_provider_profile.dart';
+import '../../screens/profile_page.dart';
 import 'add_service.dart';
 import 'services_tab.dart';
 
@@ -107,7 +107,7 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
             padding: const EdgeInsets.symmetric(horizontal: 4.0, vertical: 8.0),
             child: GestureDetector(
               onTap: () {
-                Navigator.pushNamed(context, ServiceProviderProfile.route);
+                Navigator.pushNamed(context, ProfilePage.route);
               },
               child: Container(
                 width: 36,

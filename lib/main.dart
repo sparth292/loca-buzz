@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -105,7 +106,7 @@ class LocaBuzzApp extends StatelessWidget {
         '/role-selection': (context) => const RoleSelectionScreen(),
         '/home': (context) => const HomePage(),
         '/service-provider-dashboard': (context) => const dashboard.ServiceProviderDashboard(),
-        '/service-provider-profile': (context) => const ProfilePage(),
+        '/service-provider-profile': (context) => const ServiceProviderProfile(),
         '/profile': (context) => const ProfilePage(),
       },
     );

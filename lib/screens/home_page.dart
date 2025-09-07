@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:locabuzz/screens/profile_page.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
 import 'explore_screen.dart';
@@ -22,16 +21,9 @@ class _HomePageState extends State<HomePage> {
   int _selectedBottomNavIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedBottomNavIndex = index;
-      _pageController.jumpToPage(index);
-    });
-  }
-
-  // Navigate to profile page
+  // Navigate to profile page using the correct route
   void _navigateToProfile() {
-    Navigator.pushNamed(context, ProfilePage.route);
+    Navigator.of(context, rootNavigator: true).pushNamed('/profile');
   }
 
   final List<Map<String, dynamic>> _categories = [

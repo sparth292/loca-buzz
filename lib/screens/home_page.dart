@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:locabuzz/screens/profile_page.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../main.dart';
-import 'messages_screen.dart';
 import 'explore_screen.dart';
-
+import 'messages_screen.dart';
 
 // Apply Poppins font to all text in the app
 final TextTheme textTheme = GoogleFonts.poppinsTextTheme();
@@ -30,6 +29,11 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  // Navigate to profile page
+  void _navigateToProfile() {
+    Navigator.pushNamed(context, ProfilePage.route);
+  }
+
   final List<Map<String, dynamic>> _categories = [
     {'icon': Icons.electrical_services, 'label': 'Electrician'},
     {'icon': Icons.shopping_cart, 'label': 'Groceries'},
@@ -40,6 +44,7 @@ class _HomePageState extends State<HomePage> {
     {'icon': Icons.more_horiz, 'label': 'More'},
   ];
 
+  // Remove profile tab from bottom navigation
   final List<Map<String, dynamic>> _carouselItems = [
     {
       'title': 'Special Offers',
@@ -108,17 +113,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.only(right: 16, left: 8),
-            child: GestureDetector(
-              onTap: () {},
-              child: const CircleAvatar(
-                radius: 18,
-                backgroundColor: BeeColors.beeYellow,
-                child: Icon(Icons.person_outline, color: BeeColors.beeBlack, size: 22),
-              ),
-            ),
           ),
         ],
       ),
@@ -304,8 +298,7 @@ class _HomePageState extends State<HomePage> {
           const ExploreScreen(),
           // Messages Screen
           const MessagesScreen(),
-          // Profile Tab
-          _buildProfileTab(),
+          // Profile tab removed - using dedicated profile page
         ],
       ),
       bottomNavigationBar: Container(
@@ -325,64 +318,40 @@ class _HomePageState extends State<HomePage> {
           ),
           child: BottomNavigationBar(
             currentIndex: _selectedBottomNavIndex,
-            onTap: _onItemTapped,
-            items: [
+            onTap: (index) {
+              if (index == 3) { // Profile tab index
+                _navigateToProfile();
+                return;
+              }
+              setState(() {
+                _selectedBottomNavIndex = index;
+                _pageController.jumpToPage(index);
+              });
+            },
+            items: const [
               BottomNavigationBarItem(
-                icon: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  child: Icon(
-                    _selectedBottomNavIndex == 0 
-                        ? Icons.home_rounded 
-                        : Icons.home_outlined,
-                  ),
-                ),
+                icon: Icon(Icons.home_outlined),
+                activeIcon: Icon(Icons.home_rounded),
                 label: 'Home',
               ),
-              const BottomNavigationBarItem(
+              BottomNavigationBarItem(
                 icon: Icon(Icons.explore_outlined),
                 activeIcon: Icon(Icons.explore),
                 label: 'Explore',
               ),
               BottomNavigationBarItem(
-                icon: Stack(
-                  children: [
-                    const Icon(Icons.chat_bubble_outline),
-                    if (_selectedBottomNavIndex != 2)
-                      Positioned(
-                        right: 0,
-                        child: Container(
-                          padding: const EdgeInsets.all(1),
-                          decoration: const BoxDecoration(
-                            color: Colors.red,
-                            shape: BoxShape.circle,
-                          ),
-                          constraints: const BoxConstraints(
-                            minWidth: 10,
-                            minHeight: 10,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
+                icon: Icon(Icons.chat_bubble_outline),
+                activeIcon: Icon(Icons.chat_bubble),
                 label: 'Messages',
               ),
               BottomNavigationBarItem(
-                icon: _selectedBottomNavIndex == 3 
-                    ? Icon(Icons.person) 
-                    : Icon(Icons.person_outline),
+                icon: Icon(Icons.person_outline),
+                activeIcon: Icon(Icons.person),
                 label: 'Profile',
               ),
             ],
             selectedItemColor: BeeColors.beeBlack,
-            unselectedItemColor: BeeColors.beeGrey,
-            selectedLabelStyle: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-            ),
-            unselectedLabelStyle: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w500,
-            ),
+            unselectedItemColor: Colors.grey,
             type: BottomNavigationBarType.fixed,
             showUnselectedLabels: true,
             backgroundColor: Colors.white,
@@ -427,200 +396,6 @@ class _HomePageState extends State<HomePage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildProfileTab() {
-    final List<Map<String, dynamic>> profileOptions = [
-      {'icon': Icons.person_outline, 'title': 'Edit Profile', 'trailing': Icons.chevron_right},
-      {'icon': Icons.location_on_outlined, 'title': 'Saved Addresses', 'trailing': Icons.chevron_right},
-      {'icon': Icons.credit_card_outlined, 'title': 'Payment Methods', 'trailing': Icons.chevron_right},
-      {'icon': Icons.history, 'title': 'Order History', 'trailing': Icons.chevron_right},
-      {'icon': Icons.favorite_border, 'title': 'Favorites', 'trailing': Icons.chevron_right},
-      {'icon': Icons.settings_outlined, 'title': 'Settings', 'trailing': Icons.chevron_right},
-      {'icon': Icons.help_outline, 'title': 'Help & Support', 'trailing': Icons.chevron_right},
-      {'icon': Icons.logout, 'title': 'Logout', 'trailing': Icons.chevron_right, 'isLogout': true},
-    ];
-
-    Widget _buildProfileOption(Map<String, dynamic> option) {
-      return Container(
-        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
-          minLeadingWidth: 24,
-          dense: true,
-          leading: Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: option['isLogout'] == true 
-                  ? Colors.red.withOpacity(0.1)
-                  : Colors.grey.shade100,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              option['icon'],
-              color: option['isLogout'] == true ? Colors.red : BeeColors.beeBlack,
-              size: 20,
-            ),
-          ),
-          title: Text(
-            option['title'],
-            style: GoogleFonts.openSans(
-              fontSize: 15,
-              color: option['isLogout'] == true ? Colors.red : BeeColors.beeBlack,
-              fontWeight: option['isLogout'] == true ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-          trailing: option['isLogout'] == true
-              ? null
-              : Icon(option['trailing'], color: Colors.grey.shade400, size: 20),
-          onTap: () {
-            if (option['isLogout'] == true) {
-              _showLogoutConfirmation(context);
-            }
-          },
-        ),
-      );
-    }
-
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Profile Header
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(24),
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.only(
-                bottomLeft: Radius.circular(24),
-                bottomRight: Radius.circular(24),
-              ),
-            ),
-            child: Column(
-              children: [
-                const CircleAvatar(
-                  radius: 40,
-                  backgroundColor: BeeColors.beeYellow,
-                  child: CircleAvatar(
-                    radius: 38,
-                    backgroundColor: Colors.white,
-                    child: CircleAvatar(
-                      radius: 36,
-                      backgroundImage: AssetImage('assets/images/profile_placeholder.jpg'),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'John Doe',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[800],
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'john.doe@example.com',
-                  style: GoogleFonts.poppins(
-                    fontSize: 14,
-                    color: Colors.grey.shade600,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Stats
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _buildProfileStat('24', 'Bookings'),
-                    _buildProfileStat('12', 'Favorites'),
-                    _buildProfileStat('4.8', 'Rating'),
-                  ],
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 16),
-          // Profile Options
-          ...profileOptions.map((option) => _buildProfileOption(option)).toList(),
-          const SizedBox(height: 24),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildProfileStat(String value, String label) {
-    return Column(
-      children: [
-        Text(
-          value,
-          style: GoogleFonts.openSans(
-            color: BeeColors.beeBlack,
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          label,
-          style: GoogleFonts.openSans(
-            fontSize: 12,
-            color: Colors.grey.shade600,
-          ),
-        ),
-      ],
-    );
-  }
-
-  void _showLogoutConfirmation(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(
-          'Logout',
-          style: GoogleFonts.openSans(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        content: Text(
-          'Are you sure you want to logout?',
-          style: GoogleFonts.openSans(
-            fontSize: 14,
-          ),
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(
-              'Cancel',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-              ),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              // Handle logout
-              Navigator.pop(context);
-              Navigator.pushReplacementNamed(context, '/login');
-            },
-            style: TextButton.styleFrom(
-              foregroundColor: Colors.red,
-            ),
-            child: Text(
-              'Logout',
-              style: GoogleFonts.openSans(
-                fontSize: 14,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

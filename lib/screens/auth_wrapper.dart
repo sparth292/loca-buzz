@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:locabuzz/business_service_provider_dashboard/service_provider_dashboard.dart';
 import 'package:locabuzz/screens/onboarding/onboarding_screen.dart';
 import 'package:locabuzz/screens/home_page.dart';
-import 'package:locabuzz/utils/auth_state.dart';
+import 'package:locabuzz/utils/auth_state.dart' as local_auth;
+import '../main.dart';
 
 class AuthWrapper extends StatefulWidget {
   const AuthWrapper({super.key});
@@ -23,15 +25,64 @@ class _AuthWrapperState extends State<AuthWrapper> {
   }
 
   Future<void> _checkAuthState() async {
-    final isLoggedIn = await AuthState.isLoggedIn();
-    final userRole = await AuthState.getUserRole();
-    
-    if (mounted) {
-      setState(() {
-        _isLoggedIn = isLoggedIn;
-        _userRole = userRole;
-        _isLoading = false;
-      });
+    try {
+      // First check if we have a valid session
+      final session = supabase.auth.currentSession;
+      
+      if (session != null) {
+        // We have a valid session, get user role
+        final userRole = await local_auth.AuthState.getUserRole();
+        
+        if (mounted) {
+          setState(() {
+            _isLoggedIn = true;
+            _userRole = userRole;
+            _isLoading = false;
+          });
+        }
+      } else {
+        // No valid session, check local storage as fallback
+        final isLoggedIn = await local_auth.AuthState.isLoggedIn();
+        
+        if (isLoggedIn) {
+          // Try to restore session using refresh token
+          try {
+            // Supabase automatically handles session restoration via the persisted refresh token
+            final currentUser = supabase.auth.currentUser;
+            if (currentUser != null) {
+              final userRole = await local_auth.AuthState.getUserRole();
+              if (mounted) {
+                setState(() {
+                  _isLoggedIn = true;
+                  _userRole = userRole;
+                  _isLoading = false;
+                });
+                return;
+              }
+            }
+          } catch (e) {
+            // If we can't restore session, log out
+            await local_auth.AuthState.logOut();
+          }
+        }
+        
+        if (mounted) {
+          setState(() {
+            _isLoggedIn = false;
+            _userRole = null;
+            _isLoading = false;
+          });
+        }
+      }
+    } catch (e) {
+      // If any error occurs, default to not logged in
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+          _userRole = null;
+          _isLoading = false;
+        });
+      }
     }
   }
 

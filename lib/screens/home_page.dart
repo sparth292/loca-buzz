@@ -23,32 +23,12 @@ class _HomePageState extends State<HomePage> {
   final PageController _pageController = PageController(initialPage: 0);
 
   // Handle tab selection
-  void _onItemTapped(int index) async {
-    if (index == 3) {
-      // Handle profile navigation separately
-      final result = await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProfilePage(
-            onProfileUpdated: () {
-              // This will be called when the profile is updated
-              setState(() {});
-            },
-          ),
-        ),
-      );
-      
-      // If we return from profile with a result, refresh the page
-      if (result == true) {
-        setState(() {});
-      }
-    } else {
-      // Normal tab navigation
-      setState(() {
-        _selectedBottomNavIndex = index;
-        _pageController.jumpToPage(index);
-      });
-    }
+  void _onItemTapped(int index) {
+    // Normal tab navigation
+    setState(() {
+      _selectedBottomNavIndex = index;
+      _pageController.jumpToPage(index);
+    });
   }
 
   final List<Map<String, dynamic>> _categories = [
@@ -62,6 +42,26 @@ class _HomePageState extends State<HomePage> {
   ];
 
   // Remove profile tab from bottom navigation
+  // Navigation method for profile avatar
+  Future<void> _navigateToProfile() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ProfilePage(
+          onProfileUpdated: () {
+            // This will be called when the profile is updated
+            setState(() {});
+          },
+        ),
+      ),
+    );
+    
+    // If we return from profile with a result, refresh the page
+    if (result == true) {
+      setState(() {});
+    }
+  }
+
   final List<Map<String, dynamic>> _carouselItems = [
     {
       'title': 'Special Offers',
@@ -111,8 +111,6 @@ class _HomePageState extends State<HomePage> {
         return 'Explore';
       case 2:
         return 'Messages';
-      case 3:
-        return 'Profile';
       default:
         return 'LocaBuzz';
     }
@@ -135,30 +133,27 @@ class _HomePageState extends State<HomePage> {
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: BeeColors.beeBlack,
-        actions: _selectedBottomNavIndex == 3 
-            ? null // No actions on profile tab
-            : [
-                Stack(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.notifications_none, size: 26),
-                      onPressed: () {},
-                    ),
-                    Positioned(
-                      right: 10,
-                      top: 10,
-                      child: Container(
-                        width: 8,
-                        height: 8,
-                        decoration: const BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ),
-                  ],
+        actions: [
+          // Profile Avatar
+          Padding(
+            padding: const EdgeInsets.only(right: 8.0),
+            child: GestureDetector(
+              onTap: _navigateToProfile,
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.grey[200],
+                  border: Border.all(color: Colors.grey[300]!),
                 ),
-              ],
+                child: const Icon(Icons.person_outline, size: 20, color: Colors.black54),
+              ),
+            ),
+          ),
+          // Notification Icon
+          SizedBox(width: 5,),
+        ],
       ),
       body: PageView(
         controller: _pageController,
@@ -349,8 +344,7 @@ class _HomePageState extends State<HomePage> {
           const ExploreScreen(),
           // Messages Screen
           const MessagesScreen(),
-          // Empty container for profile tab since we're navigating to it
-          Container(),
+          // Removed profile page from PageView since we're using app bar avatar
         ],
       ),
       bottomNavigationBar: Container(
@@ -386,11 +380,6 @@ class _HomePageState extends State<HomePage> {
                 icon: Icon(Icons.chat_bubble_outline),
                 activeIcon: Icon(Icons.chat_bubble),
                 label: 'Messages',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline),
-                activeIcon: Icon(Icons.person),
-                label: 'Profile',
               ),
             ],
             selectedItemColor: BeeColors.beeBlack,

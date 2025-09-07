@@ -11,70 +11,7 @@ class ServiceProviderProfile extends StatefulWidget {
   State<ServiceProviderProfile> createState() => _ServiceProviderProfileState();
 }
 
-class _DashboardCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String value;
-  final Color color;
-
-  const _DashboardCard({
-    required this.icon,
-    required this.title,
-    required this.value,
-    this.color = Colors.white,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: BeeColors.beeYellow.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(icon, color: BeeColors.beeYellow),
-          ),
-          const SizedBox(height: 20),
-          Text(
-            title,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: BeeColors.beeGrey,
-                  fontWeight: FontWeight.w500,
-                ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: BeeColors.beeBlack,
-                ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
-  final _formKey = GlobalKey<FormState>();
-  bool _isEditing = false;
   bool _isLoading = true;
   
   // Form controllers
@@ -118,50 +55,6 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
     }
   }
   
-  // Save profile data to Supabase
-  Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Please fill in all required fields')),
-        );
-      }
-      return;
-    }
-    
-    try {
-      final user = supabase.auth.currentUser;
-      if (user == null) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('User not authenticated')),
-          );
-        }
-        return;
-      }
-      
-      final response = await supabase.from('profiles').upsert({
-        'id': user.id,
-        'full_name': _fullNameController.text.trim(),
-        'phone': _phoneController.text.trim(),
-        'is_service_provider': true,
-      }).select();
-      
-      if (mounted) {
-        setState(() => _isEditing = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Profile updated successfully!')),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error updating profile: ${e.toString()}')),
-        );
-      }
-    }
-  }
-  
   // Sign out the user
   Future<void> _signOut() async {
     try {
@@ -190,32 +83,32 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
     super.dispose();
   }
 
-  Widget _buildEditableField({
+  Widget _buildProfileField({
     required IconData icon,
     required String label,
-    required TextEditingController controller,
-    required bool isEditing,
-    TextInputType? keyboardType,
-    String? Function(String?)? validator,
+    required String value,
   }) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16, left: 24, right: 24),
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 6),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200, width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: Colors.black.withOpacity(0.03),
+            blurRadius: 6,
+            offset: const Offset(0, 2),
           ),
         ],
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(10),
+            width: 40,
+            height: 40,
+            margin: const EdgeInsets.only(right: 12),
             decoration: BoxDecoration(
               color: BeeColors.beeYellow.withOpacity(0.1),
               shape: BoxShape.circle,
@@ -224,47 +117,30 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
           ),
           const SizedBox(width: 16),
           Expanded(
-            child: isEditing
-                ? TextFormField(
-                    controller: controller,
-                    style: GoogleFonts.poppins(
-                      color: BeeColors.beeBlack,
-                      fontSize: 14,
-                    ),
-                    decoration: InputDecoration(
-                      labelText: label,
-                      labelStyle: GoogleFonts.poppins(
-                        color: BeeColors.beeGrey,
-                        fontSize: 14,
-                      ),
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.zero,
-                    ),
-                    keyboardType: keyboardType,
-                    validator: validator,
-                  )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        label,
-                        style: GoogleFonts.poppins(
-                          color: BeeColors.beeGrey,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        controller.text.isEmpty ? 'Not set' : controller.text,
-                        style: GoogleFonts.poppins(
-                          color: BeeColors.beeBlack,
-                          fontSize: 14,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.poppins(
+                    color: BeeColors.beeGrey,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
                   ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  value.isEmpty ? 'Not set' : value,
+                  style: GoogleFonts.poppins(
+                    color: BeeColors.beeBlack,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 0.2,
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -273,7 +149,7 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
 
   Widget _buildProfileHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 40, bottom: 32),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -282,7 +158,7 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -297,40 +173,60 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
                 icon: const Icon(Icons.arrow_back, color: BeeColors.beeBlack),
                 onPressed: () => Navigator.of(context).pop(),
               ),
-              Text(
-                'Profile',
-                style: GoogleFonts.poppins(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w600,
-                  color: BeeColors.beeBlack,
-                ),
-              ),
-              _isEditing
-                  ? TextButton(
-                      onPressed: () => setState(() => _isEditing = false),
-                      child: const Text(
-                        'Cancel',
-                        style: TextStyle(color: Colors.red),
-                      ),
-                    )
-                  : IconButton(
-                      icon: const Icon(Icons.edit, color: BeeColors.beeBlack),
-                      onPressed: () => setState(() => _isEditing = true),
-                    ),
+              const SizedBox(width: 48), // Maintain spacing
             ],
           ),
           const SizedBox(height: 16),
-          Stack(
-            alignment: Alignment.center,
+          // Profile info row
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
+              // Name and role column
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      _fullNameController.text.isNotEmpty
+                          ? _fullNameController.text
+                          : 'Your Name',
+                      style: GoogleFonts.poppins(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w600,
+                        color: BeeColors.beeBlack,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: BeeColors.beeYellow.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        'Service Provider',
+                        style: GoogleFonts.poppins(
+                          color: BeeColors.beeYellow,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Profile picture
               Container(
-                width: 120,
-                height: 120,
+                width: 100,
+                height: 100,
+                margin: const EdgeInsets.only(left: 16),
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
                   border: Border.all(
-                    color: BeeColors.beeYellow,
-                    width: 3,
+                    color: BeeColors.beeYellow.withOpacity(0.8),
+                    width: 2.5,
                   ),
                   color: Colors.white,
                   boxShadow: [
@@ -341,42 +237,9 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.business, size: 50, color: BeeColors.beeYellow),
+                child: const Icon(Icons.business, size: 42, color: BeeColors.beeYellow),
               ),
-              if (_isEditing)
-                Positioned(
-                  right: 0,
-                  bottom: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: const BoxDecoration(
-                      color: BeeColors.beeYellow,
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(Icons.edit, size: 18, color: Colors.white),
-                  ),
-                ),
             ],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            _fullNameController.text.isNotEmpty
-                ? _fullNameController.text
-                : 'Your Name',
-            style: GoogleFonts.poppins(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: BeeColors.beeBlack,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Service Provider',
-            style: GoogleFonts.poppins(
-              color: BeeColors.beeYellow,
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-            ),
           ),
           const SizedBox(height: 16),
         ],
@@ -395,149 +258,119 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
               ),
             )
           : SingleChildScrollView(
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildProfileHeader(),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Business Overview',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: BeeColors.beeBlack,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildProfileHeader(),
+                  const SizedBox(height: 16),
+                  // Profile Information Header
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 8, 32, 8),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: BeeColors.beeYellow,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.person_outline, size: 20, color: Colors.black87),
                         ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Stats Cards
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      child: GridView.count(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.2,
-                        children: [
-                          _DashboardCard(icon: Icons.star_rate_rounded, title: 'Rating', value: '4.8/5'),
-                          _DashboardCard(icon: Icons.calendar_today, title: 'Bookings', value: '24'),
-                          _DashboardCard(icon: Icons.people, title: 'Clients', value: '42'),
-                          _DashboardCard(icon: Icons.attach_money, title: 'Revenue', value: '₹12.5K'),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Text(
-                        'Business Information',
-                        style: GoogleFonts.poppins(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: BeeColors.beeBlack,
+                        const SizedBox(width: 12),
+                        Text(
+                          'Profile Information',
+                          style: GoogleFonts.poppins(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w600,
+                            color: BeeColors.beeBlack,
+                            letterSpacing: -0.2,
+                          ),
                         ),
-                      ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    _buildEditableField(
+                  ),
+                  if (!_isLoading) ...[
+                    _buildProfileField(
                       icon: Icons.person_outline,
                       label: 'Full Name',
-                      controller: _fullNameController,
-                      isEditing: _isEditing,
-                      validator: (value) => value?.isEmpty ?? true ? 'Required' : null,
+                      value: _fullNameController.text,
                     ),
-                    _buildEditableField(
+                    const SizedBox(height: 12),
+                    _buildProfileField(
                       icon: Icons.email_outlined,
                       label: 'Email',
-                      controller: _emailController,
-                      isEditing: false,
+                      value: _emailController.text,
                     ),
-                    _buildEditableField(
+                    const SizedBox(height: 12),
+                    _buildProfileField(
                       icon: Icons.phone_outlined,
                       label: 'Phone',
-                      controller: _phoneController,
-                      isEditing: _isEditing,
-                      keyboardType: TextInputType.phone,
+                      value: _phoneController.text,
                     ),
-                    const SizedBox(height: 24),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        children: [
-                          if (_isEditing) ...[
-                            SizedBox(
-                              width: double.infinity,
-                              child: ElevatedButton(
-                                onPressed: _saveProfile,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: BeeColors.beeYellow,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(14),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Save Changes',
-                                  style: GoogleFonts.poppins(
-                                    color: BeeColors.beeBlack,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            TextButton(
-                              onPressed: () => setState(() => _isEditing = false),
-                              child: Text(
-                                'Cancel',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.red,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 16),
-                          SizedBox(
-                            width: double.infinity,
-                            child: OutlinedButton.icon(
-                              onPressed: _signOut,
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                side: const BorderSide(color: Colors.red),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(14),
-                                ),
-                              ),
-                              icon: const Icon(Icons.logout, color: Colors.red, size: 20),
-                              label: Text(
-                                'Sign Out',
-                                style: GoogleFonts.poppins(
-                                  color: Colors.red,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
+                  ],
+                  const SizedBox(height: 24),
+                  // Edit Profile Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: () {
+                          // Edit profile functionality will be added here
+                        },
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: Colors.white,
+                          foregroundColor: Colors.black87,
+                          side: const BorderSide(color: Colors.black, width: 1.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
                           ),
-                        ],
+                        ),
+                        icon: const Icon(Icons.edit, size: 20),
+                        label: Text(
+                          'Edit Profile',
+                          style: GoogleFonts.poppins(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Sign Out Button
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton.icon(
+                        onPressed: _signOut,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          side: const BorderSide(color: Colors.red),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                        icon: const Icon(Icons.logout, color: Colors.red, size: 20),
+                        label: Text(
+                          'Sign Out',
+                          style: GoogleFonts.poppins(
+                            color: Colors.red,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                ],
               ),
             ),
           );
-        
       
     
   }

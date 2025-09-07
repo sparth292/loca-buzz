@@ -4,7 +4,7 @@ import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
 import 'add_service.dart';
-import 'services_tab.dart';
+import 'services_tab.dart' as services;
 import 'service_provider_profile.dart';
 
 class ServiceProviderDashboard extends StatefulWidget {
@@ -29,7 +29,7 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
     super.initState();
     _screens = [
       DashboardOverviewTab(onServiceAdded: _handleServiceAdded),
-      ServicesTab(),
+      services.ServicesTab(),
       const OrdersTab(),
       ReportsTab(),
       MessagesTab(),
@@ -127,11 +127,17 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
           const SizedBox(width: 8),
         ],
       ),
-      body: PageView(
-        controller: _pageController,
-        onPageChanged: _onPageChanged,
-        physics: const NeverScrollableScrollPhysics(), // Disable swiping
-        children: _screens,
+      body: Column(
+        children: [
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              onPageChanged: _onPageChanged,
+              physics: const NeverScrollableScrollPhysics(), // Disable swiping
+              children: _screens,
+            ),
+          ),
+        ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,

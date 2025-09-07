@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:locabuzz/utils/auth_state.dart' as local_auth;
-import 'screens/auth_wrapper.dart';
-import 'screens/role_selection_screen.dart';
-import 'screens/onboarding/onboarding_screen.dart';
-import 'screens/location_setup_screen.dart';
-import 'screens/home_page.dart';
-import 'screens/profile_page.dart';
-import 'business_service_provider_dashboard/service_provider_dashboard.dart';
-import 'business_service_provider_dashboard/service_provider_profile.dart';
+// Screens
+import 'package:locabuzz/screens/onboarding/onboarding_screen.dart';
+import 'package:locabuzz/screens/location_setup_screen.dart';
+import 'package:locabuzz/screens/home_page.dart';
+import 'package:locabuzz/screens/profile_page.dart';
+import 'package:locabuzz/screens/login_screen.dart';
+import 'package:locabuzz/screens/sign_up_screen.dart';
+import 'package:locabuzz/screens/role_selection_screen.dart';
+
+// Dashboards
+import 'package:locabuzz/business_service_provider_dashboard/service_provider_dashboard.dart';
+import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart';
 
 final supabase = Supabase.instance.client;
 void main() async {
@@ -92,11 +95,14 @@ class LocaBuzzApp extends StatelessWidget {
         ),
       ),
       initialRoute: '/onboarding',
-      routes: {
+      routes: <String, WidgetBuilder>{
+        // Core auth flows
         '/login': (context) => const LoginPage(),
         '/signup': (context) => const SignupPage(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/role-selection': (context) => const RoleSelectionScreen(),
+        
+        // Feature routes
         HomePage.route: (context) => const HomePage(),
         LocationSetupScreen.route: (context) => const LocationSetupScreen(),
         ProfilePage.route: (context) => const ProfilePage(),

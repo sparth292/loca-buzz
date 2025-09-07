@@ -149,7 +149,7 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
 
   Widget _buildProfileHeader() {
     return Container(
-      padding: const EdgeInsets.only(left: 24, right: 24, top: 40, bottom: 32),
+      padding: const EdgeInsets.only(left: 24, right: 24, top: 20, bottom: 32),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: const BorderRadius.only(
@@ -166,17 +166,7 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: BeeColors.beeBlack),
-                onPressed: () => Navigator.of(context).pop(),
-              ),
-              const SizedBox(width: 48), // Maintain spacing
-            ],
-          ),
-          const SizedBox(height: 16),
+
           // Profile info row
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -250,6 +240,19 @@ class _ServiceProviderProfileState extends State<ServiceProviderProfile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          'Profile',
+          style: GoogleFonts.poppins(
+            color: BeeColors.beeBlack,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        centerTitle: true,
+      ),
       backgroundColor: BeeColors.background,
       body: _isLoading
           ? const Center(

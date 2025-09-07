@@ -5,6 +5,7 @@ import 'home_page.dart';
 import 'sign_up_screen.dart';
 import '../business_service_provider_dashboard/service_provider_dashboard.dart';
 import '../main.dart' show BeeColors, BrandTitle, supabase;
+import '../utils/auth_state.dart' as local_auth;
 
 class LoginPage extends StatefulWidget {
   static const String route = '/login';
@@ -65,6 +66,18 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       // Check if email is verified
+      // Get user role from profiles table
+      final userData = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', response.user!.id)
+          .single();
+      
+      final userRole = userData['role'] as String? ?? 'user';
+      
+      // Set authentication state
+      await local_auth.AuthState.setLoggedIn(role: userRole);
+      
       if (response.user?.emailConfirmedAt == null) {
         if (!mounted) return;
         await supabase.auth.signOut();

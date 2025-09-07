@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:location/location.dart';
 
 import '../main.dart' show BeeColors, supabase, BrandTitle;
+import '../utils/auth_state.dart' as local_auth;
 import 'email_confirmation_screen.dart';
 import 'login_screen.dart';
 
@@ -103,6 +103,9 @@ class _SignupPageState extends State<SignupPage> {
 
       // Insert profile data
       await supabase.from('profiles').insert(profileData);
+
+      // Set authentication state
+      await local_auth.AuthState.setLoggedIn(role: widget.isServiceProvider ? 'service_provider' : 'user');
 
       if (!mounted) return;
 

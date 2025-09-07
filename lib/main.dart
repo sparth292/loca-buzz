@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart';
-import 'screens/login_screen.dart';
-import 'screens/sign_up_screen.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:locabuzz/utils/auth_state.dart' as local_auth;
+import 'screens/auth_wrapper.dart';
 import 'screens/role_selection_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/location_setup_screen.dart';
 import 'screens/home_page.dart';
 import 'screens/profile_page.dart';
 import 'business_service_provider_dashboard/service_provider_dashboard.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'business_service_provider_dashboard/service_provider_profile.dart';
 
 final supabase = Supabase.instance.client;
 void main() async {
@@ -18,10 +19,10 @@ void main() async {
     url: 'https://qzreommjwrqrwtaexdxc.supabase.co',
     anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6cmVvbW1qd3Jxcnd0YWV4ZHhjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTE4MTM0NTgsImV4cCI6MjA2NzM4OTQ1OH0.7GZTP4ZRbs-ypOl-z4hjH7w7ZQgAjOMkjzXzJ1GBLTM',
   );
-  runApp(const MaterialApp(
-    debugShowCheckedModeBanner: false,
-    home: LocaBuzzApp(),
-  ));
+  // Initialize SharedPreferences
+  await SharedPreferences.getInstance();
+  
+  runApp(const LocaBuzzApp());
 }
 
 class BeeColors {
@@ -92,10 +93,10 @@ class LocaBuzzApp extends StatelessWidget {
       ),
       initialRoute: '/onboarding',
       routes: {
+        '/login': (context) => const LoginPage(),
+        '/signup': (context) => const SignupPage(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/role-selection': (context) => const RoleSelectionScreen(),
-        LoginPage.route: (context) => const LoginPage(),
-        SignupPage.route: (context) => const SignupPage(),
         HomePage.route: (context) => const HomePage(),
         LocationSetupScreen.route: (context) => const LocationSetupScreen(),
         ProfilePage.route: (context) => const ProfilePage(),

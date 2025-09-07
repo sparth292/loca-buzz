@@ -69,11 +69,12 @@ class _LoginPageState extends State<LoginPage> {
       // Get user role from profiles table
       final userData = await supabase
           .from('profiles')
-          .select('role')
+          .select('is_service_provider')
           .eq('id', response.user!.id)
           .single();
       
-      final userRole = userData['role'] as String? ?? 'user';
+      final isServiceProvider = userData['is_service_provider'] as bool? ?? false;
+      final userRole = isServiceProvider ? 'service_provider' : 'user';
       
       // Set authentication state
       await local_auth.AuthState.setLoggedIn(role: userRole);
@@ -145,14 +146,33 @@ class _LoginPageState extends State<LoginPage> {
       }
     } on AuthException catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error.message)),
-      );
+      String errorMessage = error.message;
+      // Handle specific auth errors
+      if (error.message.contains('Invalid login credentials')) {
+        errorMessage = 'Invalid email or password';
+      } else if (error.message.contains('Email not confirmed')) {
+        errorMessage = 'Please verify your email before logging in';
+      }
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(errorMessage),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } catch (error) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('An unexpected error occurred')),
-      );
+      debugPrint('Login error: $error');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Login failed: ${error.toString()}'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     } finally {
       if (mounted) {
         setState(() {

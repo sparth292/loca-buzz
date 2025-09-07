@@ -128,21 +128,30 @@ class _LoginPageState extends State<LoginPage> {
 
         if (!mounted) return;
         
-        // Clear any existing routes and navigate to the appropriate screen
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          isServiceProvider ? ServiceProviderDashboard.route : HomePage.route,
-          (route) => false,
-        );
+        // Clear all routes and navigate to the appropriate screen
+        // Using pushAndRemoveUntil with a new route to ensure clean navigation
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+              builder: (context) => isServiceProvider 
+                  ? const ServiceProviderDashboard() 
+                  : const HomePage(),
+            ),
+            (route) => false, // This removes all previous routes
+          );
+        }
       } catch (e) {
         if (!mounted) return;
         // If there's an error fetching user role, default to consumer
         final prefs = await SharedPreferences.getInstance();
         await prefs.setBool('isServiceProvider', false);
         
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          HomePage.route,
-          (route) => false,
-        );
+        if (mounted) {
+          Navigator.of(context).pushAndRemoveUntil(
+             MaterialPageRoute(builder: (context) => HomePage()),
+            (route) => false, // This removes all previous routes
+          );
+        }
       }
     } on AuthException catch (error) {
       if (!mounted) return;

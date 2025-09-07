@@ -49,16 +49,23 @@ class _AuthWrapperState extends State<AuthWrapper> {
       return const OnboardingScreen();
     }
 
-    // Role-based navigation
-    switch (_userRole) {
-      case 'service_provider':
-        return const ServiceProviderDashboard();
-      case 'admin':
-        // TODO: Add admin dashboard
-        return const ServiceProviderDashboard(); // Temporary fallback
-      default:
-        // Default to regular user dashboard
-        return const HomePage();
-    }
+    // Use a Navigator to prevent going back to auth screens
+    return Navigator(
+      onGenerateRoute: (_) => MaterialPageRoute(
+        builder: (context) {
+          // Role-based navigation
+          switch (_userRole) {
+            case 'service_provider':
+              return const ServiceProviderDashboard();
+            case 'admin':
+              // TODO: Add admin dashboard
+              return const ServiceProviderDashboard(); // Temporary fallback
+            default:
+              // Default to regular user dashboard
+              return const HomePage();
+          }
+        },
+      ),
+    );
   }
 }

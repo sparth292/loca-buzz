@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:locabuzz/business_service_provider_dashboard/service_provider_profile.dart';
 import '../main.dart' show BeeColors;
 import 'orders_tab.dart';
 import 'reports_tab.dart';
 import 'messages_tab.dart';
 import 'add_service.dart';
 import 'services_tab.dart';
-
+import 'service_provider_profile.dart';
 
 class ServiceProviderDashboard extends StatefulWidget {
   static const String route = '/service-provider-dashboard';

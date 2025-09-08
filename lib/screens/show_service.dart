@@ -67,9 +67,10 @@ class _ShowServiceScreenState extends State<ShowServiceScreen> {
       appBar: AppBar(
         title: Text(
           'Service Details',
-          style: GoogleFonts.poppins(
+          style: GoogleFonts.openSans(
             color: BeeColors.beeBlack,
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
           ),
         ),
         backgroundColor: Colors.white,
@@ -311,12 +312,13 @@ class _ShowServiceScreenState extends State<ShowServiceScreen> {
                       children: [
                         // Call Button
                         Expanded(
+                          flex: 2,
                           child: ElevatedButton.icon(
                             onPressed: service['provider_phone'] != null
                                 ? () => _makePhoneCall(service['provider_phone'])
                                 : null,
                             icon: const Icon(Icons.phone, size: 20),
-                            label: const Text('Call Now'),
+                            label: const Text('Call'),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: BeeColors.beeYellow,
                               foregroundColor: BeeColors.beeBlack,
@@ -330,15 +332,36 @@ class _ShowServiceScreenState extends State<ShowServiceScreen> {
                         const SizedBox(width: 12),
                         // Message Button
                         Expanded(
+                          flex: 2,
                           child: OutlinedButton.icon(
                             onPressed: () {
                               // TODO: Implement message functionality
                             },
                             icon: const Icon(Icons.message, size: 20),
-                            label: const Text('Message'),
+                            label: const Text('Chat'),
                             style: OutlinedButton.styleFrom(
                               foregroundColor: BeeColors.beeBlack,
                               side: const BorderSide(color: BeeColors.beeBlack, width: 1.5),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Buy Service Button
+                        Expanded(
+                          flex: 2,
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Implement buy service functionality
+                            },
+                            icon: const Icon(Icons.shopping_cart, size: 20),
+                            label: const Text('Buy'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BeeColors.beeBlack,
+                              foregroundColor: Colors.white,
                               padding: const EdgeInsets.symmetric(vertical: 14),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),

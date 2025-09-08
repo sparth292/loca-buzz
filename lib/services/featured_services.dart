@@ -3,18 +3,22 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class FeaturedServices {
   static final supabase = Supabase.instance.client;
 
-  // Fetch all featured services with provider details
-  static Future<List<Map<String, dynamic>>> getFeaturedServices() async {
+  // Fetch featured services with optional category filter
+  static Future<List<Map<String, dynamic>>> getFeaturedServices({String? category}) async {
     try {
-      final response = await supabase
+      var query = supabase
           .from('service_providers')
           .select('''
             *,
             profiles:profile_id (id, full_name, phone, email)
-          ''')
-          // You might want to add some filters here later
-          // .limit(10) // Limit the number of results if needed
-          .then((response) => response as List<dynamic>);
+          ''');
+      
+      // Apply category filter if provided
+      if (category != null && category.isNotEmpty) {
+        query = query.eq('category', category);
+      }
+      
+      final response = await query.then((response) => response as List<dynamic>);
 
       // Transform the response to match our expected format
       return response.map<Map<String, dynamic>>((service) => {

@@ -34,13 +34,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   final List<Map<String, dynamic>> _categories = [
-    {'icon': Icons.electrical_services, 'label': 'Electrician'},
-    {'icon': Icons.shopping_cart, 'label': 'Groceries'},
-    {'icon': Icons.restaurant, 'label': 'Street Food'},
-    {'icon': Icons.plumbing, 'label': 'Plumber'},
-    {'icon': Icons.car_repair, 'label': 'Mechanic'},
-    {'icon': Icons.cleaning_services, 'label': 'Cleaning'},
-    {'icon': Icons.more_horiz, 'label': 'More'},
+    {'icon': Icons.all_inclusive, 'label': 'All', 'value': 'all'},
+    {'icon': Icons.electrical_services, 'label': 'Electrician', 'value': 'electrician'},
+    {'icon': Icons.shopping_cart, 'label': 'Groceries', 'value': 'groceries'},
+    {'icon': Icons.restaurant, 'label': 'Food', 'value': 'food'},
+    {'icon': Icons.plumbing, 'label': 'Plumber', 'value': 'plumber'},
+    {'icon': Icons.car_repair, 'label': 'Mechanic', 'value': 'mechanic'},
+    {'icon': Icons.cleaning_services, 'label': 'Cleaning', 'value': 'cleaning'},
+    {'icon': Icons.more_horiz, 'label': 'Others', 'value': 'others'},
   ];
 
   // Remove profile tab from bottom navigation
@@ -97,14 +98,14 @@ class _HomePageState extends State<HomePage> {
     _loadFeaturedServices();
   }
 
-  Future<void> _loadFeaturedServices() async {
+  Future<void> _loadFeaturedServices({String? category}) async {
     setState(() {
       _isLoading = true;
       _error = '';
     });
 
     try {
-      final services = await FeaturedServices.getFeaturedServices();
+      final services = await FeaturedServices.getFeaturedServices(category: category);
       if (mounted) {
         setState(() {
           _featuredBusinesses = services;
@@ -276,25 +277,33 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 12),
                 SizedBox(
                   height: 100,
                   child: ListView.builder(
                     scrollDirection: Axis.horizontal,
                     itemCount: _categories.length,
-                    itemBuilder: (context, index) => _buildCategoryItem(
-                      _categories[index]['icon'],
-                      _categories[index]['label'],
-                      index == _selectedCategoryIndex,
-                      onTap: () {
-                        setState(() {
-                          _selectedCategoryIndex = index;
-                        });
-                      },
-                    ),
+                    padding: const EdgeInsets.only(left: 0, right: 6, top: 8, bottom: 0),
+                    itemBuilder: (context, index) {
+                      final category = _categories[index];
+                      return _buildCategoryItem(
+                        category['icon'],
+                        category['label'],
+                        _selectedCategoryIndex == index,
+                        value: category['value'],
+                        
+                        onTap: () {
+                          setState(() {
+                            _selectedCategoryIndex = index;
+                          });
+                          // Reload services with the selected category
+                          _loadFeaturedServices(
+                            category: category['value'] == 'all' ? null : category['value']
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
-                
                 const SizedBox(height: 24),
                 
                 // Featured Businesses
@@ -419,7 +428,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _buildCategoryItem(IconData icon, String label, bool isSelected, {VoidCallback? onTap}) {
+  Widget _buildCategoryItem(IconData icon, String label, bool isSelected, {required String value, VoidCallback? onTap}) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -437,9 +446,10 @@ class _HomePageState extends State<HomePage> {
               child: Icon(
                 icon,
                 color: isSelected ? BeeColors.beeBlack : BeeColors.beeGrey,
+                size: 24,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               label,
               textAlign: TextAlign.center,
@@ -448,7 +458,7 @@ class _HomePageState extends State<HomePage> {
                 color: isSelected ? BeeColors.beeBlack : BeeColors.beeGrey,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
-              maxLines: 2,
+              maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
           ],

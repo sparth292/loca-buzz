@@ -472,89 +472,136 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Business Image
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: business['image_url'] != null
-                ? Image.network(
-                    business['image_url']!,
-                    height: 120,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
-                  )
-                : _buildPlaceholderImage(),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Business Name
-                Text(
-                  business['name'] ?? 'No Name',
-                  style: GoogleFonts.poppins(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 4),
-                
-                // Category and Price
-                Text(
-                  business['category'] ?? 'No Category',
-                  style: GoogleFonts.poppins(
-                    color: Colors.grey[600],
-                    fontSize: 13,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                if (business['price_range'] != null) ...[
-                  const SizedBox(height: 4),
-                  Text(
-                    business['price_range'],
-                    style: GoogleFonts.poppins(
-                      color: Colors.green[700],
-                      fontSize: 12,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-                
-                const SizedBox(height: 12),
-                
-                // Call Button
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton.icon(
-                    onPressed: business['provider_phone'] != null
-                        ? () => _makePhoneCall(business['provider_phone'])
-                        : null,
-                    icon: const Icon(Icons.phone, size: 16),
-                    label: const Text('Call Now'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: BeeColors.beeYellow,
-                      foregroundColor: BeeColors.beeBlack,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+      child: IntrinsicHeight(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Business Image - Fixed height
+            ClipRRect(
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+              child: business['image_url'] != null
+                  ? Image.network(
+                      business['image_url']!,
+                      height: 100,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+                    )
+                  : _buildPlaceholderImage(),
             ),
-          ),
-        ],
+            
+            // Content with flexible space
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Top row with name and price
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Business Name
+                        Expanded(
+                          child: Text(
+                            business['name'] ?? 'No Name',
+                            style: GoogleFonts.poppins(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        
+                        // Price on the right side
+                        if (business['price_range'] != null)
+                          Container(
+                            margin: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.green[50],
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Text(
+                              business['price_range'],
+                              style: GoogleFonts.poppins(
+                                color: Colors.green[800],
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    
+                    const SizedBox(height: 6),
+                    
+                    // Category
+                    Text(
+                      business['category'] ?? 'No Category',
+                      style: GoogleFonts.poppins(
+                        color: Colors.grey[600],
+                        fontSize: 13,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    
+                    const Spacer(),
+                    
+                    // Buttons Row
+                    Row(
+                      children: [
+                        // Call Button
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: business['provider_phone'] != null
+                                ? () => _makePhoneCall(business['provider_phone'])
+                                : null,
+                            icon: const Icon(Icons.phone, size: 16),
+                            label: const Text('Call'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: BeeColors.beeYellow,
+                              foregroundColor: BeeColors.beeBlack,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(width: 8), // Space between buttons
+                        
+                        // Message Button
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () {
+                              // TODO: Implement message functionality
+                            },
+                            icon: const Icon(Icons.message, size: 16),
+                            label: const Text('Message'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: BeeColors.beeBlack,
+                              padding: const EdgeInsets.symmetric(vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                side: BorderSide(color: Colors.grey[300]!),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

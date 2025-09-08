@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import 'explore_screen.dart';
 import 'messages_screen.dart';
 import 'profile_page.dart';
+import 'show_service.dart';
+import '../services/featured_services.dart';
 
 // Apply Poppins font to all text in the app
 final TextTheme textTheme = GoogleFonts.poppinsTextTheme();
@@ -84,22 +87,39 @@ class _HomePageState extends State<HomePage> {
   
   final PageController _carouselController = PageController(viewportFraction: 0.95);
 
-  final List<Map<String, dynamic>> _featuredBusinesses = [
-    {
-      'name': 'Sparky Electrics',
-      'category': 'Electrician',
-      'rating': 4.8,
-      'distance': 1.2,
-      'image': 'assets/images/electrician.jpg',
-    },
-    {
-      'name': 'Fresh Mart',
-      'category': 'Grocery Store',
-      'rating': 4.5,
-      'distance': 0.8,
-      'image': 'assets/images/grocery.jpg',
-    },
-  ];
+  List<Map<String, dynamic>> _featuredBusinesses = [];
+  bool _isLoading = true;
+  String _error = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFeaturedServices();
+  }
+
+  Future<void> _loadFeaturedServices() async {
+    setState(() {
+      _isLoading = true;
+      _error = '';
+    });
+
+    try {
+      final services = await FeaturedServices.getFeaturedServices();
+      if (mounted) {
+        setState(() {
+          _featuredBusinesses = services;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load services. Please try again.';
+          _isLoading = false;
+        });
+      }
+    }
+  }
 
   // Get the current page title based on the selected tab
   String _getAppBarTitle() {
@@ -303,13 +323,42 @@ class _HomePageState extends State<HomePage> {
                 ),
                 const SizedBox(height: 12),
                 SizedBox(
-                  height: 220, // Further reduced height
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    itemCount: _featuredBusinesses.length,
-                    itemBuilder: (context, index) => _buildBusinessCard(_featuredBusinesses[index]),
-                    padding: const EdgeInsets.only(bottom: 2, left: 12, right: 4), // Reduced bottom padding
-                  ),
+                  height: 240,
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _error.isNotEmpty
+                          ? Center(
+                              child: Padding(
+                                padding: const EdgeInsets.all(16.0),
+                                child: Text(
+                                  _error,
+                                  style: const TextStyle(color: Colors.red),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            )
+                          : _featuredBusinesses.isEmpty
+                              ? const Center(
+                                  child: Text('No services available'),
+                                )
+                              : ListView.builder(
+                                  scrollDirection: Axis.horizontal,
+                                  itemCount: _featuredBusinesses.length,
+                                  itemBuilder: (context, index) => GestureDetector(
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => ShowServiceScreen(
+                                            serviceId: _featuredBusinesses[index]['id'],
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                    child: _buildBusinessCard(_featuredBusinesses[index]),
+                                  ),
+                                  padding: const EdgeInsets.only(bottom: 2, left: 12, right: 4),
+                                ),
                 ),
                 // Single spacing after featured businesses
                 const SizedBox(height: 20),
@@ -410,7 +459,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBusinessCard(Map<String, dynamic> business) {
     return Container(
-      width: 250, // Further reduced width
+      width: 250,
       margin: const EdgeInsets.only(right: 12, bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -430,131 +479,77 @@ class _HomePageState extends State<HomePage> {
           // Business Image
           ClipRRect(
             borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
-            child: Image.asset(
-              business['image'],
-              height: 90, // Further reduced image height
-              width: double.infinity,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) => Container(
-                height: 90,
-                width: double.infinity,
-                color: Colors.grey[200],
-                child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 32),
-              ),
-            ),
+            child: business['image_url'] != null
+                ? Image.network(
+                    business['image_url']!,
+                    height: 120,
+                    width: double.infinity,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) => _buildPlaceholderImage(),
+                  )
+                : _buildPlaceholderImage(),
           ),
           Padding(
-            padding: const EdgeInsets.all(10), // Reduced padding
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Business Name and Rating
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        business['name'],
-                        style: GoogleFonts.poppins(
-                          fontSize: 14, // Slightly smaller font
-                          fontWeight: FontWeight.bold,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                      decoration: BoxDecoration(
-                        color: BeeColors.beeYellow,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(Icons.star, size: 12, color: BeeColors.beeBlack),
-                          const SizedBox(width: 2),
-                          Text(
-                            business['rating'].toString(),
-                            style: GoogleFonts.poppins(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: BeeColors.beeBlack,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                // Business Name
+                Text(
+                  business['name'] ?? 'No Name',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 4),
-                // Category and Distance
-                Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        business['category'],
-                        style: GoogleFonts.poppins(
-                          color: Colors.grey[600],
-                          fontSize: 12,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 4),
-                    const Icon(Icons.circle, size: 3, color: BeeColors.beeGrey),
-                    const SizedBox(width: 4),
-                    Text(
-                      '${business['distance']} km',
-                      style: GoogleFonts.poppins(
-                        color: Colors.grey[600],
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
+                
+                // Category and Price
+                Text(
+                  business['category'] ?? 'No Category',
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[600],
+                    fontSize: 13,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                const SizedBox(height: 6),
-                // Action Buttons
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.message_outlined, size: 12),
-                        label: Text(
-                          'Message',
-                          style: GoogleFonts.poppins(fontSize: 10),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          foregroundColor: BeeColors.beeBlack,
-                          side: const BorderSide(color: BeeColors.beeGrey),
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          minimumSize: const Size(0, 28),
-                        ),
+                
+                if (business['price_range'] != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    business['price_range'],
+                    style: GoogleFonts.poppins(
+                      color: Colors.green[700],
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+                
+                const SizedBox(height: 12),
+                
+                // Call Button
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: business['provider_phone'] != null
+                        ? () => _makePhoneCall(business['provider_phone'])
+                        : null,
+                    icon: const Icon(Icons.phone, size: 16),
+                    label: const Text('Call Now'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: BeeColors.beeYellow,
+                      foregroundColor: BeeColors.beeBlack,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8),
                       ),
                     ),
-                    const SizedBox(width: 6),
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        onPressed: () {},
-                        icon: const Icon(Icons.phone_outlined, size: 12),
-                        label: Text(
-                          'Call',
-                          style: GoogleFonts.poppins(fontSize: 10),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: BeeColors.beeYellow,
-                          foregroundColor: BeeColors.beeBlack,
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          minimumSize: const Size(0, 28),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
@@ -562,5 +557,25 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
     );
+  }
+  
+  Widget _buildPlaceholderImage() {
+    return Container(
+      height: 120,
+      width: double.infinity,
+      color: Colors.grey[200],
+      child: const Icon(Icons.image_not_supported, color: Colors.grey, size: 32),
+    );
+  }
+  
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    if (await canLaunchUrl(phoneUri)) {
+      await launchUrl(phoneUri);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Could not launch phone')),
+      );
+    }
   }
 }

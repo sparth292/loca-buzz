@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
@@ -173,125 +175,400 @@ class _AddServicePageState extends State<AddServicePage> {
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Scaffold(
-      backgroundColor: BeeColors.background,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        foregroundColor: BeeColors.beeBlack,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text('Add Service'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
+  Widget _buildImagePicker() {
+    return GestureDetector(
+      onTap: _pickImage,
+      child: MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+            border: Border.all(
+              color: _pickedImage != null 
+                  ? BeeColors.beeYellow.withOpacity(0.5) 
+                  : Colors.grey[200]!,
+              width: 1.5,
+            ),
+          ),
+          child: Column(
             children: [
-              Center(
-                child: GestureDetector(
-                  onTap: _pickImage,
-                  child: MouseRegion(
-                    cursor: SystemMouseCursors.click,
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
+              _pickedImage != null
+                  ? ClipRRect(
+                      borderRadius: const BorderRadius.only(
+                        topLeft: Radius.circular(14),
+                        topRight: Radius.circular(14),
+                      ),
+                      child: Image.file(
+                        _pickedImage!,
+                        width: double.infinity,
+                        height: 160,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : Container(
+                      height: 160,
                       decoration: BoxDecoration(
-                        border: Border.all(color: BeeColors.beeGrey.withOpacity(0.4), width: 2),
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          if (_pickedImage != null)
-                            BoxShadow(
-                              color: BeeColors.beeYellow.withOpacity(0.18),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                        color: Colors.grey[50],
+                        borderRadius: const BorderRadius.only(
+                          topLeft: Radius.circular(14),
+                          topRight: Radius.circular(14),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: BeeColors.beeYellow.withOpacity(0.1),
+                              shape: BoxShape.circle,
                             ),
+                            child: const Icon(
+                              Iconsax.gallery_add,
+                              size: 32,
+                              color: BeeColors.beeYellow,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            'Tap to add service image',
+                            style: GoogleFonts.poppins(
+                              fontSize: 14,
+                              color: Colors.grey[600],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Recommended size: 800x600px',
+                            style: GoogleFonts.poppins(
+                              fontSize: 12,
+                              color: Colors.grey[400],
+                            ),
+                          ),
                         ],
                       ),
-                      child: _pickedImage != null
-                          ? ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.file(
-                                _pickedImage!,
-                                width: 120,
-                                height: 120,
-                                fit: BoxFit.cover,
-                              ),
-                            )
-                          : Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                color: BeeColors.beeYellow.withOpacity(0.12),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(Icons.camera_alt, size: 46, color: BeeColors.beeYellow),
-                            ),
+                    ),
+              Container(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                decoration: BoxDecoration(
+                  color: _pickedImage != null ? Colors.grey[50] : Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(14),
+                    bottomRight: Radius.circular(14),
+                  ),
+                ),
+                child: Center(
+                  child: Text(
+                    _pickedImage != null ? 'Change Image' : 'Upload Image',
+                    style: GoogleFonts.poppins(
+                      color: _pickedImage != null ? Colors.blue : BeeColors.beeYellow,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 18),
-              TextFormField(
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFormField({
+    required String label,
+    required String hint,
+    required TextEditingController controller,
+    int? maxLines = 1,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: TextFormField(
+            controller: controller,
+            maxLines: maxLines,
+            keyboardType: keyboardType,
+            style: GoogleFonts.poppins(
+              fontSize: 14,
+              color: Colors.black87,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.poppins(
+                color: Colors.grey[400],
+                fontSize: 14,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: maxLines! > 1 ? 12 : 16,
+              ),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: BeeColors.beeYellow, width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
+            ),
+            validator: validator,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDropdownField({
+    required String label,
+    required List<String> items,
+    required String? value,
+    required Function(String?) onChanged,
+    required String hint,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.poppins(
+            fontSize: 14,
+            fontWeight: FontWeight.w500,
+            color: Colors.grey[700],
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.02),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: DropdownButtonFormField<String>(
+            value: value,
+            onChanged: onChanged,
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: GoogleFonts.poppins(
+                color: Colors.grey[400],
+                fontSize: 14,
+              ),
+              filled: true,
+              fillColor: Colors.white,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: Colors.grey[200]!),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: BeeColors.beeYellow, width: 2),
+              ),
+            ),
+            items: [
+              DropdownMenuItem(
+                value: null,
+                child: Text(
+                  hint,
+                  style: GoogleFonts.poppins(
+                    color: Colors.grey[400],
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+              ...items.map((item) => DropdownMenuItem(
+                    value: item,
+                    child: Text(
+                      item,
+                      style: GoogleFonts.poppins(
+                        color: Colors.black87,
+                        fontSize: 14,
+                      ),
+                    ),
+                  )),
+            ],
+            validator: (value) => value == null ? 'Please select $label' : null,
+            icon: const Icon(Icons.keyboard_arrow_down_rounded, color: Colors.grey),
+            isExpanded: true,
+            borderRadius: BorderRadius.circular(12),
+            dropdownColor: Colors.white,
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.grey[50],
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0.5,
+        centerTitle: true,
+        title: Text(
+          'Add New Service',
+          style: GoogleFonts.poppins(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: Colors.black87,
+          ),
+        ),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+      ),
+      body: SafeArea(
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            padding: const EdgeInsets.all(16),
+            children: [
+              // Service Image
+              _buildImagePicker(),
+              
+              const SizedBox(height: 24),
+              
+              // Service Name
+              _buildFormField(
+                label: 'Service Name',
+                hint: 'e.g., Plumbing, Electrician, Cleaning',
                 controller: _serviceNameController,
-                decoration: InputDecoration(
-                  labelText: 'Service Name',
-                  hintText: 'e.g., Plumbing, Electrician, Cleaning',
-                  filled: true,
-                  fillColor: Colors.white,
-                  hintStyle: TextStyle(color: BeeColors.beeGrey.withAlpha(180)),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: BeeColors.beeYellow, width: 2),
-                  ),
-                ),
-                validator: (val) =>
-                    val == null || val.trim().isEmpty ? 'Enter a service name' : null,
+                validator: (val) => val == null || val.trim().isEmpty 
+                    ? 'Please enter a service name' 
+                    : null,
               ),
-              const SizedBox(height: 18),
-              const SizedBox(height: 8),
-              Text(
-                'Service Description',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.black87,
-                  fontWeight: FontWeight.w500,
-                ),
+              
+              const SizedBox(height: 20),
+              
+              // Category Dropdown
+              _buildDropdownField(
+                label: 'Category',
+                hint: 'Select a category',
+                items: _categoryOptions,
+                value: _selectedCategory,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedCategory = value;
+                  });
+                },
               ),
-              const SizedBox(height: 8),
-              TextFormField(
+              
+              const SizedBox(height: 20),
+              
+              // Service Description
+              _buildFormField(
+                label: 'Service Description',
+                hint: 'Describe your service in detail',
                 controller: _serviceDescController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
+                maxLines: 4,
+                validator: (val) => val == null || val.trim().isEmpty 
+                    ? 'Please enter a description' 
+                    : null,
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Price and Experience Row
+              Row(
+                children: [
+                  // Price Range
+                  Expanded(
+                    child: _buildFormField(
+                      label: 'Price Range',
+                      hint: 'e.g., ₹500 - ₹1000',
+                      controller: _priceRangeController,
+                      validator: (val) => val == null || val.trim().isEmpty 
+                          ? 'Enter price range' 
+                          : null,
+                    ),
                   ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide(color: BeeColors.beeGrey.withOpacity(0.4)),
+                  
+                  const SizedBox(width: 16),
+                  
+                  // Experience Years
+                  Expanded(
+                    child: _buildFormField(
+                      label: 'Experience (Years)',
+                      hint: 'e.g., 5',
+                      controller: _experienceYearsController,
+                      keyboardType: TextInputType.number,
+                      validator: (val) => val == null || val.trim().isEmpty 
+                          ? 'Enter years' 
+                          : null,
+                    ),
                   ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: const BorderSide(color: BeeColors.beeYellow, width: 2),
-                  ),
-                ),
-                validator: (val) =>
-                    val == null || val.trim().isEmpty ? 'Enter a description' : null,
+                ],
+              ),
+              
+              const SizedBox(height: 20),
+              
+              // Availability Dropdown
+              _buildDropdownField(
+                label: 'Availability',
+                hint: 'Select availability',
+                items: _availabilityOptions,
+                value: _selectedAvailability,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedAvailability = value;
+                  });
+                },
               ),
               const SizedBox(height: 18),
               Row(
@@ -429,27 +706,71 @@ class _AddServicePageState extends State<AddServicePage> {
                 },
                 validator: (val) => val == null || val.isEmpty ? 'Select availability' : null,
               ),
-              const SizedBox(height: 30),
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: BeeColors.beeYellow,
-                  foregroundColor: BeeColors.beeBlack,
-                  minimumSize: const Size.fromHeight(52),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(14),
+              const SizedBox(height: 32),
+              
+              // Submit Button
+              Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: BeeColors.beeYellow.withOpacity(0.3),
+                      blurRadius: 15,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _submitService,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: BeeColors.beeYellow,
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                    shadowColor: Colors.transparent,
                   ),
-                  textStyle: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 18,
+                  child: _isLoading
+                      ? const SizedBox(
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.black),
+                            strokeWidth: 2.5,
+                          ),
+                        )
+                      : Text(
+                          'Publish Service',
+                          style: GoogleFonts.poppins(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // Cancel Button
+              TextButton(
+                onPressed: _isLoading ? null : () => Navigator.of(context).pop(),
+                style: TextButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: _isLoading ? null : _submitService,
-                child: _isLoading
-                    ? const SizedBox(
-                        height: 28,
-                        width: 28,
-                        child: CircularProgressIndicator(strokeWidth: 3, color: BeeColors.beeBlack))
-                    : const Text('Add Service'),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.poppins(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w500,
+                    color: Colors.grey[600],
+                  ),
+                ),
               ),
             ],
           ),

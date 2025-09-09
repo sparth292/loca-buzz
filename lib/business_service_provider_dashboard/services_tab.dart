@@ -112,16 +112,6 @@ class _ServicesTabState extends State<ServicesTab> {
     }
   }
 
-  Future<void> _navigateToAddService() async {
-    final result = await Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const AddServicePage()),
-    );
-    
-    if (result != null && mounted) {
-      await _fetchServices();
-    }
-  }
 
   Widget _buildEmptyState() {
     return Center(

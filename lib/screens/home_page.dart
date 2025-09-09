@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -70,24 +71,43 @@ class _HomePageState extends State<HomePage> {
       'title': 'Special Offers',
       'subtitle': 'Up to 50% off on all services',
       'icon': Icons.local_offer_outlined,
-      'backgroundColor': const Color(0xFF6E5DE7),
+      'backgroundColor': BeeColors.beeBlack,
+      'textColor': Colors.white,
     },
     {
       'title': 'New Services',
       'subtitle': 'Discover our latest service providers',
       'icon': Icons.explore,
-      'backgroundColor': const Color(0xFF4CAF50),
+      'backgroundColor': BeeColors.beeBlack,
+      'textColor': Colors.white,
     },
     {
       'title': 'Top Rated',
       'subtitle': 'Check out our highest rated professionals',
       'icon': Icons.star_border,
-      'backgroundColor': const Color(0xFFFF9800),
+      'backgroundColor': BeeColors.beeBlack,
+      'textColor': Colors.white,
+    },
+    {
+      'title': '24/7 Support',
+      'subtitle': 'We\'re here to help you anytime',
+      'icon': Icons.support_agent,
+      'backgroundColor': BeeColors.beeBlack,
+      'textColor': Colors.white,
+    },
+    {
+      'title': 'Premium Services',
+      'subtitle': 'Exclusive services for our valued customers',
+      'icon': Icons.workspace_premium,
+      'backgroundColor': BeeColors.beeBlack,
+      'textColor': Colors.white,
     },
   ];
   
-  final PageController _carouselController = PageController(viewportFraction: 0.95);
-
+  late final PageController _carouselController;
+  Timer? _timer;
+  int _currentPage = 0;
+  
   List<Map<String, dynamic>> _featuredBusinesses = [];
   bool _isLoading = true;
   String _error = '';
@@ -96,6 +116,31 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     _loadFeaturedServices();
+    _carouselController = PageController(
+      viewportFraction: 0.95,
+      initialPage: 1000, // Start at a high number for infinite scroll
+    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _startAutoScroll();
+    });
+  }
+  
+  @override
+  void dispose() {
+    _timer?.cancel();
+    _carouselController.dispose();
+    super.dispose();
+  }
+  
+  void _startAutoScroll() {
+    _timer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      if (_carouselController.hasClients) {
+        _carouselController.nextPage(
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
   }
 
   Future<void> _loadFeaturedServices({String? category}) async {
@@ -190,80 +235,113 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Carousel with PageView
+                // Carousel
                 SizedBox(
-                  height: 160,
-                  child: Stack(
-                    children: [
-                      PageView.builder(
-                        controller: _carouselController,
-                        itemCount: _carouselItems.length,
-                        itemBuilder: (context, index) {
-                          final item = _carouselItems[index];
-                          return Container(
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            decoration: BoxDecoration(
-                              color: item['backgroundColor'],
-                              borderRadius: BorderRadius.circular(16),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 10,
-                                  offset: const Offset(0, 4),
-                                ),
+                  height: 180,
+                  child: PageView.builder(
+                    controller: _carouselController,
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index % _carouselItems.length;
+                      });
+                    },
+                    itemCount: null, // Infinite items
+                    itemBuilder: (context, index) {
+                      final itemIndex = index % _carouselItems.length;
+                      final item = _carouselItems[itemIndex];
+                      return Container(
+                        margin: const EdgeInsets.only(left: 0, right: 6, top: 8, bottom: 0),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: item['backgroundColor'],
+                            borderRadius: BorderRadius.circular(16),
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                item['backgroundColor'],
+                                item['backgroundColor'].withOpacity(0.9),
                               ],
                             ),
-                            child: Stack(
-                              children: [
-                                Positioned(
-                                  right: 16,
-                                  top: 16,
-                                  bottom: 16,
-                                  width: 100,
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      color: Colors.white.withOpacity(0.2),
-                                      child: Icon(
-                                        item['icon'],
-                                        size: 50,
-                                        color: Colors.white,
-                                      ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: const Offset(0, 3),
+                                spreadRadius: 0.5,
+                              ),
+                            ],
+                          ),
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                right: 0,
+                                top: 0,
+                                bottom: 0,
+                                width: 100,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: item['textColor'] == Colors.white 
+                                        ? Colors.white.withOpacity(0.1) 
+                                        : BeeColors.beeBlack.withOpacity(0.1),
+                                    borderRadius: const BorderRadius.only(
+                                      topRight: Radius.circular(16),
+                                      bottomRight: Radius.circular(16),
                                     ),
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.all(20.0),
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        item['title'],
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white,
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        item['subtitle'],
-                                        style: GoogleFonts.poppins(
-                                          color: Colors.white.withOpacity(0.9),
-                                          fontSize: 13,
-                                        ),
-                                      ),
-                                    ],
+                                  child: Icon(
+                                    item['icon'],
+                                    size: 40,
+                                    color: item['textColor'] == Colors.white 
+                                        ? Colors.white 
+                                        : BeeColors.beeBlack,
                                   ),
                                 ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                      // Removed page indicator dots as requested
-                    ],
+                              ),
+                              Positioned(
+                                left: 20,
+                                top: 0,
+                                bottom: 0,
+                                right: 120, // Leave space for the icon
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        item['title'],
+                                        style: GoogleFonts.openSans(
+                                          color: item['textColor'],
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w700,
+                                          height: 1.2,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Flexible(
+                                      child: Text(
+                                        item['subtitle'],
+                                        style: GoogleFonts.openSans(
+                                          color: item['textColor'].withOpacity(0.9),
+                                          fontSize: 13,
+                                          height: 1.3,
+                                          fontWeight: FontWeight.w400,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
                   ),
                 ),
                 const SizedBox(height: 24),

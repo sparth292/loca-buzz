@@ -178,11 +178,28 @@ class _ServiceProviderDashboardState extends State<ServiceProviderDashboard> {
     );
   }
 
+  Future<void> _navigateToAddService() async {
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const AddServicePage()),
+    );
+    
+    if (result == true && mounted) {
+      // Refresh the services tab if it's active
+      if (_currentIndex == 1) {
+        // The ServicesTab is the second tab (index 1)
+        final servicesTab = _screens[1] as services.ServicesTab;
+        // Call a method to refresh services if available, or rebuild the widget
+        if (mounted) setState(() {});
+      }
+    }
+  }
+
   Widget? _buildFloatingActionButton() {
     switch (_currentIndex) {
       case 1:
         return FloatingActionButton(
-          onPressed: () {},
+          onPressed: _navigateToAddService,
           backgroundColor: BeeColors.beeYellow,
           child: const Icon(Icons.add, color: Colors.black),
         );

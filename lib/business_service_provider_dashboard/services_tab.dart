@@ -286,11 +286,6 @@ class _ServicesTabState extends State<ServicesTab> {
 
     return Scaffold(
       backgroundColor: BeeColors.background,
-      floatingActionButton: FloatingActionButton(
-        onPressed: _navigateToAddService,
-        backgroundColor: BeeColors.beeYellow,
-        child: const Icon(Icons.add, color: Colors.black),
-      ),
       body: RefreshIndicator(
         onRefresh: _fetchServices,
         child: body,

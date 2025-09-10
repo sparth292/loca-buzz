@@ -389,17 +389,7 @@ class _ServicesTabState extends State<ServicesTab> {
                     padding: const EdgeInsets.all(16),
                     children: [
                       // Header
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: Text(
-                          'My Services',
-                          style: GoogleFonts.poppins(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black87,
-                          ),
-                        ),
-                      ),
+                      
                       
                       // Services List
                       ..._services.map((service) => _buildServiceCard(service)).toList(),

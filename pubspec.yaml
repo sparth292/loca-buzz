@@ -45,7 +45,7 @@ dependencies:
   lottie:
   image_picker:
   location: ^8.0.1
-
+  intl:
 dev_dependencies:
   flutter_test:
     sdk: flutter

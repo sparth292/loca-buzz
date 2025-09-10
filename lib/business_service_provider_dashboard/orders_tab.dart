@@ -153,7 +153,7 @@ class _OrdersTabState extends State<OrdersTab> with SingleTickerProviderStateMix
             unselectedLabelColor: Colors.grey[700],
             indicator: BoxDecoration(
               color: BeeColors.beeYellow,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(12),
             ),
             labelStyle: GoogleFonts.poppins(
               fontWeight: FontWeight.w600,

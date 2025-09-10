@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../main.dart' show BeeColors, supabase;
-
+bool _isServiceProvider = false;
 class ProfilePage extends StatefulWidget {
   static const String route = '/profile';
   
@@ -197,7 +197,7 @@ class _ProfilePageState extends State<ProfilePage> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                       child: Text(
-                        'Service Provider',
+                        _isServiceProvider ? 'Service Provider' : 'Customer',
                         style: GoogleFonts.poppins(
                           color: BeeColors.beeYellow,
                           fontSize: 13,

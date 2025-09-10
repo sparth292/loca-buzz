@@ -188,12 +188,11 @@ class DashboardOverviewTab extends StatelessWidget {
                 Iconsax.shopping_cart,
                 Colors.blue.shade100,
                 () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const OrdersTab(),
-                    ),
-                  );
+                  // Navigate to the orders tab in the dashboard
+                  final dashboardState = context.findAncestorStateOfType<_ServiceProviderDashboardState>();
+                  if (dashboardState != null) {
+                    dashboardState._onItemTapped(2); // 2 is the index of OrdersTab
+                  }
                 },
               ),
             ),

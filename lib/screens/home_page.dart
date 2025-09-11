@@ -1,184 +1,16 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:location/location.dart';
 import '../main.dart';
 import 'explore_screen.dart';
 import 'messages_screen.dart';
 import 'profile_page.dart';
 import 'show_service.dart';
 import '../services/featured_services.dart';
-import 'location_setup_screen.dart';
 
 // Apply Poppins font to all text in the app
 final TextTheme textTheme = GoogleFonts.poppinsTextTheme();
-
-// Location Selection Dialog Widget
-class LocationSelectionDialog extends StatelessWidget {
-  final VoidCallback? onCurrentLocationTap;
-  
-  const LocationSelectionDialog({
-    super.key, 
-    this.onCurrentLocationTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
-      title: const Text(
-        'Select Delivery Address',
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          fontSize: 18,
-        ),
-      ),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Current Location
-            _buildAddressTile(
-              context,
-              title: 'Use Current Location',
-              subtitle: 'Get precise location using GPS',
-              icon: Icons.my_location,
-              onTap: onCurrentLocationTap ?? () {
-                // Fallback if onCurrentLocationTap is not provided
-                Navigator.pop(context);
-              },
-            ),
-            const SizedBox(height: 16),
-            const Divider(height: 1),
-            const SizedBox(height: 16),
-            // Saved Addresses
-            const Text(
-              'SAVED ADDRESSES',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 12),
-            // Home Address
-            _buildAddressTile(
-              context,
-              title: 'Home',
-              subtitle: '123 Main St, City, Country',
-              icon: Icons.home_outlined,
-              onTap: () {
-                // This would use the saved home address
-                Navigator.pop(context, {
-                  'address': '123 Main St, City, Country',
-                  'latitude': 0.0, // Replace with actual coordinates
-                  'longitude': 0.0, // Replace with actual coordinates
-                });
-              },
-            ),
-            const SizedBox(height: 12),
-            // Work Address
-            _buildAddressTile(
-              context,
-              title: 'Work',
-              subtitle: '456 Business Ave, City, Country',
-              icon: Icons.work_outline,
-              onTap: () {
-                // This would use the saved work address
-                Navigator.pop(context, {
-                  'address': '456 Business Ave, City, Country',
-                  'latitude': 0.0, // Replace with actual coordinates
-                  'longitude': 0.0, // Replace with actual coordinates
-                });
-              },
-            ),
-            const SizedBox(height: 16),
-            // Enter Location Manually Button
-            SizedBox(
-              width: double.infinity,
-              child: OutlinedButton.icon(
-                onPressed: () {
-                  Navigator.pop(context); // Close the dialog
-                  Navigator.pushNamed(context, LocationSetupScreen.route);
-                },
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  side: const BorderSide(color: BeeColors.beeYellow),
-                ),
-                icon: const Icon(Icons.search, color: BeeColors.beeBlack),
-                label: const Text(
-                  'Enter Location Manually',
-                  style: TextStyle(color: BeeColors.beeBlack),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAddressTile(
-    BuildContext context, {
-    required String title,
-    required String subtitle,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 8),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: BeeColors.beeYellow.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Icon(icon, color: BeeColors.beeBlack),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle,
-                    style: TextStyle(
-                      color: Colors.grey[600],
-                      fontSize: 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right, color: Colors.grey),
-          ],
-        ),
-      ),
-    );
-  }
-}
 
 class HomePage extends StatefulWidget {
   static const String route = '/home';
@@ -192,11 +24,6 @@ class _HomePageState extends State<HomePage> {
   int _selectedCategoryIndex = 0;
   int _selectedBottomNavIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
-  
-  // Location related variables
-  Map<String, dynamic>? _savedLocation;
-  bool _isLoadingLocation = true;
-  final String _locationKey = 'user_location_data';
 
   // Handle tab selection
   void _onItemTapped(int index) {
@@ -285,167 +112,14 @@ class _HomePageState extends State<HomePage> {
   bool _isLoading = true;
   String _error = '';
 
-  // Load saved location data
-  Future<void> _loadSavedLocation() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedData = prefs.getString(_locationKey);
-      
-      if (savedData != null) {
-        setState(() {
-          _savedLocation = json.decode(savedData);
-        });
-      }
-    } catch (e) {
-      debugPrint('Error loading saved location: $e');
-    } finally {
-      setState(() {
-        _isLoadingLocation = false;
-      });
-    }
-  }
-
-  // Get current location and reverse geocode to address
-  Future<Map<String, dynamic>?> _getCurrentLocation() async {
-    try {
-      final location = Location();
-      bool serviceEnabled = await location.serviceEnabled();
-      if (!serviceEnabled) {
-        serviceEnabled = await location.requestService();
-        if (!serviceEnabled) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Location services are disabled')),
-            );
-          }
-          return null;
-        }
-      }
-
-      // Check location permission
-      var permissionGranted = await location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
-        permissionGranted = await location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Location permissions are denied')),
-            );
-          }
-          return null;
-        }
-      }
-
-      // Show loading indicator
-      if (mounted) {
-        showDialog(
-          context: context,
-          barrierDismissible: false,
-          builder: (context) => const Center(
-            child: CircularProgressIndicator(
-              valueColor: AlwaysStoppedAnimation<Color>(BeeColors.beeYellow),
-            ),
-          ),
-        );
-      }
-
-      // Get current location
-      final currentLocation = await location.getLocation();
-      
-      // In a production app, you would use a geocoding service here
-      // For example, using the geocoding package:
-      // final placemarks = await placemarkFromCoordinates(
-      //   currentLocation.latitude!,
-      //   currentLocation.longitude!,
-      // );
-      // final place = placemarks.first;
-      // final address = '${place.street}, ${place.locality}, ${place.postalCode}';
-      
-      // For now, we'll just return the coordinates as address
-      final address = 'Current Location (${currentLocation.latitude!.toStringAsFixed(4)}, ${currentLocation.longitude!.toStringAsFixed(4)})';
-      
-      // Close loading dialog
-      if (mounted) {
-        Navigator.of(context).pop();
-      }
-      
-      return {
-        'latitude': currentLocation.latitude,
-        'longitude': currentLocation.longitude,
-        'address': address,
-      };
-    } catch (e) {
-      // Close loading dialog if it's still open
-      if (mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error getting location: $e')),
-        );
-      }
-      return null;
-    }
-  }
-
-  // Show location selection dialog
-  Future<void> _showLocationDialog() async {
-    final result = await showDialog<Map<String, dynamic>>(
-      context: context,
-      builder: (BuildContext context) => LocationSelectionDialog(
-        onCurrentLocationTap: () async {
-          final location = await _getCurrentLocation();
-          if (location != null && context.mounted) {
-            Navigator.of(context).pop(location);
-          }
-        },
-      ),
-    );
-
-    if (result != null) {
-      // Save the selected location
-      try {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_locationKey, json.encode(result));
-        
-        setState(() {
-          _savedLocation = result;
-        });
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Failed to save location')),
-          );
-        }
-      }
-    }
-  }
-
-  // This method is kept for future use when navigating to location setup is needed
-  // Currently using direct navigation in the LocationSelectionDialog
-  // Future<void> _navigateToLocationSetup() async {
-  //   final result = await Navigator.pushNamed(
-  //     context,
-  //     LocationSetupScreen.route,
-  //   );
-
-  //   if (result != null && result is Map<String, dynamic>) {
-  //     // Update the saved location
-  //     setState(() {
-  //       _savedLocation = result;
-  //     });
-  //   }
-  // }
-
   @override
   void initState() {
     super.initState();
     _loadFeaturedServices();
-    _startAutoScroll();
-    _loadSavedLocation();
     _carouselController = PageController(
       viewportFraction: 0.95,
       initialPage: 1000, // Start at a high number for infinite scroll
     );
-    _startAutoScroll();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _startAutoScroll();
     });
@@ -512,36 +186,7 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: _selectedBottomNavIndex == 0 
-            ? GestureDetector(
-                onTap: _showLocationDialog,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const BrandTitle(fontSize: 20, textAlign: TextAlign.left),
-                    const SizedBox(height: 2),
-                    _isLoadingLocation
-                        ? const SizedBox(
-                            width: 120,
-                            height: 16,
-                            child: LinearProgressIndicator(
-                              color: BeeColors.beeYellow,
-                              backgroundColor: Colors.grey,
-                              minHeight: 2,
-                            ),
-                          )
-                        : Text(
-                            _savedLocation?['address']?.toString() ?? 'Tap to set location',
-                            style: GoogleFonts.poppins(
-                              fontSize: 12,
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                  ],
-                ),
-              )
+            ? const BrandTitle(fontSize: 24, textAlign: TextAlign.left)
             : Text(
                 _getAppBarTitle(),
                 style: const TextStyle(

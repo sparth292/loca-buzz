@@ -318,6 +318,8 @@ class DashboardOverviewTab extends StatelessWidget {
                             fontWeight: FontWeight.w500,
                             color: Colors.black87,
                           ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 2),
                         Text(
@@ -329,11 +331,6 @@ class DashboardOverviewTab extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                  Icon(
-                    Iconsax.arrow_right_3,
-                    color: Colors.grey[400],
-                    size: 20,
                   ),
                 ],
               ),

@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../main.dart';
 import 'explore_screen.dart';
+import 'location_setup_screen.dart';
 import 'messages_screen.dart';
 import 'profile_page.dart';
 import 'show_service.dart';
@@ -24,6 +27,9 @@ class _HomePageState extends State<HomePage> {
   int _selectedCategoryIndex = 0;
   int _selectedBottomNavIndex = 0;
   final PageController _pageController = PageController(initialPage: 0);
+  Map<String, dynamic>? _savedLocation;
+  bool _isLoadingLocation = true;
+  final String _locationKey = 'user_location_data';
 
   // Handle tab selection
   void _onItemTapped(int index) {
@@ -115,6 +121,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _loadSavedLocation();
     _loadFeaturedServices();
     _carouselController = PageController(
       viewportFraction: 0.95,
@@ -141,6 +148,274 @@ class _HomePageState extends State<HomePage> {
         );
       }
     });
+  }
+
+  // Load saved location data
+  Future<void> _loadSavedLocation() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedData = prefs.getString(_locationKey);
+      
+      if (savedData != null) {
+        setState(() {
+          _savedLocation = json.decode(savedData);
+          _isLoadingLocation = false;
+        });
+        // Show location popup after a short delay to allow the UI to build
+        Future.delayed(const Duration(milliseconds: 500), _showLocationPopup);
+      } else {
+        setState(() => _isLoadingLocation = false);
+        // Show location popup if no saved location
+        Future.delayed(const Duration(milliseconds: 500), _showLocationPopup);
+      }
+    } catch (e) {
+      debugPrint('Error loading saved location: $e');
+      setState(() => _isLoadingLocation = false);
+    }
+  }
+
+  // Build address tile widget
+  Widget _buildAddressTile({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isSelected ? BeeColors.beeYellow.withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? BeeColors.beeYellow : Colors.grey[300]!,
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Icon(icon, color: isSelected ? BeeColors.beeYellow : Colors.grey[600]),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: GoogleFonts.poppins(
+                      fontWeight: FontWeight.w600,
+                      color: BeeColors.beeBlack,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: Colors.grey[600],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle, color: BeeColors.beeYellow, size: 20),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Show location popup
+  Future<void> _showLocationPopup() async {
+    if (!mounted) return;
+    
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).scaffoldBackgroundColor,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(24),
+                  topRight: Radius.circular(24),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.2),
+                    blurRadius: 10,
+                    offset: const Offset(0, -2),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Select Delivery Address',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: BeeColors.beeBlack,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: BeeColors.beeBlack),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  
+                  // Location permission banner
+                  if (_savedLocation == null)
+                    GestureDetector(
+                      onTap: () async {
+                        final result = await Navigator.of(context, rootNavigator: false).pushNamed(
+                          LocationSetupScreen.route,
+                        );
+                        if (result != null && mounted) {
+                          await _loadSavedLocation();
+                          if (mounted) Navigator.pop(context);
+                        }
+                      },
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: BeeColors.beeYellow.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.location_off, color: BeeColors.beeBlack),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Location Permission is Off',
+                                    style: GoogleFonts.poppins(
+                                      fontWeight: FontWeight.w600,
+                                      color: BeeColors.beeBlack,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    'Enable location to find services near you',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: 12,
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: BeeColors.beeYellow,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              child: Text(
+                                'ENABLE',
+                                style: GoogleFonts.poppins(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: BeeColors.beeBlack,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  
+                  // Saved addresses
+                  if (_savedLocation != null) ...[
+                    // Current location
+                    _buildAddressTile(
+                      icon: Icons.my_location,
+                      title: 'Current Location',
+                      subtitle: _savedLocation!['address'] ?? 'Using your current location',
+                      isSelected: true,
+                      onTap: () {
+                        // Use current location
+                        Navigator.pop(context);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    
+                    // Home address if available
+                    if (_savedLocation!['address'] != null)
+                      _buildAddressTile(
+                        icon: Icons.home,
+                        title: 'Home',
+                        subtitle: _savedLocation!['address'],
+                        isSelected: false,
+                        onTap: () {
+                          // Use home address
+                          Navigator.pop(context);
+                        },
+                      ),
+                    
+                    // Add new address button
+                    const SizedBox(height: 16),
+                    OutlinedButton.icon(
+                      onPressed: () async {
+                        final result = await Navigator.of(context, rootNavigator: false).pushNamed(
+                          LocationSetupScreen.route,
+                          arguments: {'preventLeadingIcon': true},
+                        );
+                        if (result != null && mounted) {
+                          await _loadSavedLocation();
+                          if (mounted) Navigator.pop(context);
+                        }
+                      },
+                      icon: const Icon(Icons.add_location_alt, color: BeeColors.beeYellow),
+                      label: Text(
+                        'Add a new address',
+                        style: GoogleFonts.poppins(
+                          color: BeeColors.beeYellow,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ],
+                  
+                  const SizedBox(height: 23),
+                  // Manual entry button
+                  
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  // Show location popup when the location icon is tapped in the app bar
+  void _showLocationPopupOnTap() {
+    _showLocationPopup();
   }
 
   Future<void> _loadFeaturedServices({String? category}) async {
@@ -186,7 +461,43 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(
       appBar: AppBar(
         title: _selectedBottomNavIndex == 0 
-            ? const BrandTitle(fontSize: 24, textAlign: TextAlign.left)
+            ? Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Deliver to',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  GestureDetector(
+                    onTap: _showLocationPopupOnTap,
+                    child: SizedBox(
+                      width: MediaQuery.of(context).size.width * 0.6, // Limit width to 60% of screen
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              _savedLocation?['address'] ?? 'Select your location',
+                              style: const TextStyle(
+                                color: BeeColors.beeBlack,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.keyboard_arrow_down, size: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              )
             : Text(
                 _getAppBarTitle(),
                 style: const TextStyle(
@@ -199,6 +510,11 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Colors.white,
         foregroundColor: BeeColors.beeBlack,
         actions: [
+          if (_selectedBottomNavIndex == 0)
+            IconButton(
+              icon: const Icon(Icons.location_on_outlined, color: BeeColors.beeYellow),
+              onPressed: _showLocationPopupOnTap,
+            ),
           // Profile Avatar
           Padding(
             padding: const EdgeInsets.only(right: 8.0),

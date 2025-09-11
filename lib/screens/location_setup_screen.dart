@@ -1,8 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:location/location.dart';
+import 'package:location/location.dart' as location_package;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:geocoding/geocoding.dart';
 import '../main.dart' show BeeColors;
 
 const String _locationKey = 'user_location_data';
@@ -18,8 +19,8 @@ class LocationSetupScreen extends StatefulWidget {
 class _LocationSetupScreenState extends State<LocationSetupScreen> {
   bool _isLoading = true;
   bool _hasError = false;
-  LocationData? _currentLocation;
-  final Location _location = Location();
+  location_package.LocationData? _currentLocation;
+  final location_package.Location _location = location_package.Location();
   String _statusMessage = 'Getting your location...';
   final TextEditingController _addressController = TextEditingController();
   String? _addressError;
@@ -41,7 +42,7 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
         final locationData = json.decode(savedData);
         setState(() {
           _addressController.text = locationData['address'] ?? '';
-          _currentLocation = LocationData.fromMap({
+          _currentLocation = location_package.LocationData.fromMap({
             'latitude': locationData['latitude'],
             'longitude': locationData['longitude'],
           });
@@ -69,6 +70,20 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
     }
   }
 
+  // Convert coordinates to address using geocoding
+  Future<String> _getAddressFromLatLng(double lat, double lng) async {
+    try {
+      List<Placemark> placemarks = await placemarkFromCoordinates(lat, lng);
+      if (placemarks.isNotEmpty) {
+        Placemark place = placemarks.first;
+        return '${place.street}, ${place.locality}, ${place.administrativeArea} ${place.postalCode}, ${place.country}';
+      }
+    } catch (e) {
+      debugPrint('Geocoding error: $e');
+    }
+    return 'Address not available';
+  }
+
   Future<void> _requestLocation() async {
     setState(() {
       _isLoading = true;
@@ -87,16 +102,29 @@ class _LocationSetupScreenState extends State<LocationSetupScreen> {
       }
 
       // Check location permission
-      PermissionStatus permissionGranted = await _location.hasPermission();
-      if (permissionGranted == PermissionStatus.denied) {
+      location_package.PermissionStatus permissionGranted = await _location.hasPermission();
+      if (permissionGranted == location_package.PermissionStatus.denied) {
         permissionGranted = await _location.requestPermission();
-        if (permissionGranted != PermissionStatus.granted) {
+        if (permissionGranted != location_package.PermissionStatus.granted) {
           throw Exception('Location permissions are denied');
         }
       }
 
       // Get current location
       _currentLocation = await _location.getLocation();
+      
+      // Get address from coordinates
+      if (_currentLocation != null) {
+        final address = await _getAddressFromLatLng(
+          _currentLocation!.latitude!,
+          _currentLocation!.longitude!,
+        );
+        if (mounted) {
+          setState(() {
+            _addressController.text = address;
+          });
+        }
+      }
       
       if (mounted) {
         setState(() {

@@ -1,3 +1,3 @@
 # Loca Buzz
 
-A freelance porject
+A freelance project
